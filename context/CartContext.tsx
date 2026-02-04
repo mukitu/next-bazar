@@ -1,7 +1,14 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Product, CartItem } from '../types';
-import { COD_CHARGE, BKASH_CHARGE_RATE } from '../constants';
+import { COD_CHARGE, BKASH_CHARGE_RATE, SHIPPING_DHAKA, SHIPPING_OUTSIDE } from '../constants';
+
+interface Totals {
+  base: number;
+  shipping: number;
+  paymentCharge: number;
+  total: number;
+}
 
 interface CartContextType {
   cart: CartItem[];
@@ -10,11 +17,7 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   subtotal: number;
-  getTotals: (paymentMethod: 'COD' | 'BKASH') => { 
-    base: number; 
-    charge: number; 
-    total: number; 
-  };
+  getTotals: (paymentMethod: 'COD' | 'BKASH', region: 'DHAKA' | 'OUTSIDE') => Totals;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -22,19 +25,13 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  // Load from LocalStorage
   useEffect(() => {
     const saved = localStorage.getItem('amar_bazar_cart');
     if (saved) {
-      try {
-        setCart(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse cart", e);
-      }
+      try { setCart(JSON.parse(saved)); } catch (e) { console.error(e); }
     }
   }, []);
 
-  // Save to LocalStorage
   useEffect(() => {
     localStorage.setItem('amar_bazar_cart', JSON.stringify(cart));
   }, [cart]);
@@ -44,27 +41,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const existing = prev.find(item => item.product.id === product.id);
       if (existing) {
         return prev.map(item => 
-          item.product.id === product.id 
-            ? { ...item, quantity: item.quantity + quantity } 
-            : item
+          item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
       return [...prev, { product, quantity }];
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item.product.id !== productId));
-  };
+  const removeFromCart = (productId: string) => setCart(prev => prev.filter(item => item.product.id !== productId));
 
   const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId);
-      return;
-    }
-    setCart(prev => prev.map(item => 
-      item.product.id === productId ? { ...item, quantity } : item
-    ));
+    if (quantity <= 0) { removeFromCart(productId); return; }
+    setCart(prev => prev.map(item => item.product.id === productId ? { ...item, quantity } : item));
   };
 
   const clearCart = () => setCart([]);
@@ -74,20 +62,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return acc + (price * item.quantity);
   }, 0);
 
-  const getTotals = useCallback((paymentMethod: 'COD' | 'BKASH') => {
+  const getTotals = useCallback((paymentMethod: 'COD' | 'BKASH', region: 'DHAKA' | 'OUTSIDE'): Totals => {
     const base = subtotal;
-    let charge = 0;
+    const shipping = region === 'DHAKA' ? SHIPPING_DHAKA : SHIPPING_OUTSIDE;
+    let paymentCharge = 0;
     
     if (paymentMethod === 'COD') {
-      charge = COD_CHARGE;
+      paymentCharge = COD_CHARGE;
     } else {
-      charge = Math.ceil(base * BKASH_CHARGE_RATE); // Rounding up for standard cash-out coverage
+      paymentCharge = Math.ceil(base * BKASH_CHARGE_RATE);
     }
 
     return {
       base,
-      charge,
-      total: base + charge
+      shipping,
+      paymentCharge,
+      total: base + shipping + paymentCharge
     };
   }, [subtotal]);
 
