@@ -11,6 +11,7 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [modalMode, setModalMode] = useState<'add' | 'edit' | 'none'>('none');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [newCatName, setNewCatName] = useState('');
 
   const [formState, setFormState] = useState({
     name: '', price: '', stock: '', category_id: '', description: '', image_url: '', is_featured: false, is_flash_sale: false
@@ -68,6 +69,23 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const addCategory = async () => {
+    if (!newCatName) return;
+    const { error } = await supabase.from('categories').insert({ 
+      name: newCatName, 
+      slug: newCatName.toLowerCase().replace(/\s+/g, '-') 
+    });
+    if (error) alert(error.message);
+    else { setNewCatName(''); loadData(); }
+  };
+
+  const deleteCategory = async (id: string) => {
+    if (!window.confirm("Delete this category?")) return;
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (error) alert(error.message);
+    else loadData();
+  };
+
   const updateOrderStatus = async (id: string, status: string) => {
     const { error } = await supabase.from('orders').update({ status }).eq('id', id);
     if (error) alert(error.message);
@@ -102,6 +120,8 @@ const AdminDashboard: React.FC = () => {
     });
     setModalMode('edit');
   };
+
+  const totalRevenue = orders.filter(o => o.status !== 'Cancelled').reduce((acc, o) => acc + o.total_amount, 0);
 
   if (loading) return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -148,6 +168,23 @@ const AdminDashboard: React.FC = () => {
             </button>
           )}
         </div>
+
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+             <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Total Revenue</p>
+                <p className="text-5xl font-black text-slate-900 tracking-tighter italic">{CURRENCY_SYMBOL}{totalRevenue.toLocaleString()}</p>
+             </div>
+             <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Gross Orders</p>
+                <p className="text-5xl font-black text-slate-900 tracking-tighter italic">{orders.length}</p>
+             </div>
+             <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Active Assets</p>
+                <p className="text-5xl font-black text-slate-900 tracking-tighter italic">{products.length}</p>
+             </div>
+          </div>
+        )}
 
         {activeTab === 'orders' && (
           <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
@@ -213,6 +250,34 @@ const AdminDashboard: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {activeTab === 'categories' && (
+          <div className="max-w-xl">
+             <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm mb-10">
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">New Category</label>
+                <div className="flex gap-4">
+                   <input 
+                      type="text" 
+                      value={newCatName} 
+                      onChange={(e) => setNewCatName(e.target.value)}
+                      placeholder="e.g. Health & Beauty"
+                      className="flex-1 bg-slate-50 border-none rounded-xl p-4 font-bold text-sm"
+                   />
+                   <button onClick={addCategory} className="bg-slate-900 text-white px-8 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 transition">Add</button>
+                </div>
+             </div>
+             <div className="space-y-4">
+                {categories.map(c => (
+                  <div key={c.id} className="bg-white p-6 rounded-2xl border border-slate-50 flex justify-between items-center group">
+                    <span className="font-black text-slate-900 uppercase tracking-tighter italic">{c.name}</span>
+                    <button onClick={() => deleteCategory(c.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </div>
+                ))}
+             </div>
           </div>
         )}
 
