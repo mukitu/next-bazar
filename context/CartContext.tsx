@@ -1,7 +1,6 @@
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Product, CartItem } from '../types';
-import { COD_CHARGE, BKASH_CHARGE_RATE, SHIPPING_DHAKA, SHIPPING_OUTSIDE } from '../constants';
+import { Product, CartItem } from '../types.ts';
+import { COD_CHARGE, BKASH_CHARGE_RATE, SHIPPING_DHAKA, SHIPPING_OUTSIDE } from '../constants.ts';
 
 interface Totals {
   base: number;
