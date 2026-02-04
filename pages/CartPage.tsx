@@ -1,7 +1,6 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { CURRENCY_SYMBOL } from '../constants';
+import { CURRENCY_SYMBOL, SHIPPING_DHAKA, SHIPPING_OUTSIDE } from '../constants';
 
 interface CartPageProps {
   onCheckout: () => void;
@@ -10,16 +9,20 @@ interface CartPageProps {
 
 const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
   const { cart, updateQuantity, removeFromCart, subtotal } = useCart();
+  const [region, setRegion] = useState<'DHAKA' | 'OUTSIDE'>('DHAKA');
+
+  const shippingCharge = region === 'DHAKA' ? SHIPPING_DHAKA : SHIPPING_OUTSIDE;
+  const grandTotal = subtotal + shippingCharge;
 
   if (cart.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto py-32 px-4 text-center">
-        <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400">
+      <div className="max-w-4xl mx-auto py-32 px-4 text-center animate-fadeIn">
+        <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
           <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Your cart is empty</h2>
-        <p className="text-gray-500 mb-8">Looks like you haven't added anything to your cart yet.</p>
-        <button onClick={onShop} className="bg-orange-600 text-white px-10 py-4 rounded-full font-bold hover:shadow-xl transition">
+        <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-2 italic">Empty Cart</h2>
+        <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-8">Your bag is as light as air.</p>
+        <button onClick={onShop} className="bg-slate-900 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-600 transition shadow-xl active:scale-95">
           START SHOPPING
         </button>
       </div>
@@ -27,26 +30,26 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-bold mb-10">Shopping Cart</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fadeIn">
+      <h1 className="text-4xl font-black mb-12 tracking-tighter uppercase italic">My <span className="text-orange-500">Cart</span></h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-6">
           {cart.map(item => (
-            <div key={item.product.id} className="bg-white p-4 rounded-2xl border flex gap-4 items-center">
-              <img src={item.product.images[0]} className="w-20 h-20 object-cover rounded-lg border" />
+            <div key={item.product.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 flex gap-6 items-center shadow-sm">
+              <img src={item.product.images[0]} className="w-24 h-24 object-cover rounded-2xl border bg-slate-50" alt="" />
               <div className="flex-1">
-                <h3 className="font-bold text-gray-900">{item.product.name}</h3>
-                <p className="text-orange-600 font-bold text-sm">
+                <h3 className="font-black text-slate-900 uppercase tracking-tighter text-sm italic">{item.product.name}</h3>
+                <p className="text-orange-600 font-black text-lg mt-1">
                   {CURRENCY_SYMBOL}{item.product.discount_price ?? item.product.price}
                 </p>
               </div>
-              <div className="flex items-center border rounded-lg overflow-hidden">
-                <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="px-3 py-1 hover:bg-gray-50">-</button>
-                <span className="px-4 py-1 text-sm font-bold border-x">{item.quantity}</span>
-                <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="px-3 py-1 hover:bg-gray-50">+</button>
+              <div className="flex items-center bg-slate-50 rounded-xl overflow-hidden border">
+                <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="px-4 py-2 hover:bg-white transition text-slate-400 font-black">-</button>
+                <span className="px-4 py-2 text-xs font-black text-slate-900 border-x">{item.quantity}</span>
+                <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="px-4 py-2 hover:bg-white transition text-slate-400 font-black">+</button>
               </div>
-              <button onClick={() => removeFromCart(item.product.id)} className="text-gray-400 hover:text-red-500 p-2">
+              <button onClick={() => removeFromCart(item.product.id)} className="text-slate-300 hover:text-red-500 transition-colors p-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
               </button>
             </div>
@@ -54,25 +57,46 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
         </div>
 
         <div className="lg:col-span-1">
-          <div className="bg-white p-8 rounded-3xl border shadow-sm sticky top-24">
-            <h2 className="text-xl font-bold mb-6">Summary</h2>
-            <div className="space-y-4 mb-8">
-              <div className="flex justify-between text-gray-500">
-                <span>Subtotal</span>
-                <span>{CURRENCY_SYMBOL}{subtotal}</span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>Shipping</span>
-                <span className="text-green-600 font-medium">Calculated at next step</span>
-              </div>
-              <div className="border-t pt-4 flex justify-between text-lg font-bold">
-                <span>Estimated Total</span>
-                <span className="text-orange-600">{CURRENCY_SYMBOL}{subtotal}</span>
+          <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl sticky top-24">
+            <h2 className="text-xl font-black mb-8 uppercase tracking-tighter italic">Checkout <span className="text-orange-500">Plan</span></h2>
+            
+            {/* Delivery Selection */}
+            <div className="mb-8">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Select Destination</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button 
+                  onClick={() => setRegion('DHAKA')}
+                  className={`py-4 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${region === 'DHAKA' ? 'bg-slate-900 text-white border-slate-900 shadow-lg' : 'bg-white text-slate-400 border-slate-50 hover:border-slate-100'}`}
+                >
+                  Inside Dhaka
+                </button>
+                <button 
+                  onClick={() => setRegion('OUTSIDE')}
+                  className={`py-4 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${region === 'OUTSIDE' ? 'bg-slate-900 text-white border-slate-900 shadow-lg' : 'bg-white text-slate-400 border-slate-50 hover:border-slate-100'}`}
+                >
+                  Outside Dhaka
+                </button>
               </div>
             </div>
-            <button onClick={onCheckout} className="w-full bg-orange-600 text-white py-5 rounded-2xl font-bold text-lg hover:shadow-xl hover:scale-[1.01] transition-all">
-              PROCEED TO CHECKOUT
+
+            <div className="space-y-4 mb-10 text-[10px] font-black uppercase tracking-widest">
+              <div className="flex justify-between text-slate-400">
+                <span>Items Subtotal</span>
+                <span className="text-slate-900">{CURRENCY_SYMBOL}{subtotal}</span>
+              </div>
+              <div className="flex justify-between text-slate-400">
+                <span>Shipping Charge</span>
+                <span className="text-slate-900">{CURRENCY_SYMBOL}{shippingCharge}</span>
+              </div>
+              <div className="border-t border-slate-50 pt-6 flex justify-between text-2xl font-black tracking-tighter">
+                <span>GRAND TOTAL</span>
+                <span className="text-orange-600">{CURRENCY_SYMBOL}{grandTotal}</span>
+              </div>
+            </div>
+            <button onClick={onCheckout} className="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 transition-all hover:scale-[1.02] active:scale-95">
+              PROCEED TO SECURE PAY
             </button>
+            <p className="text-[8px] text-center mt-6 text-slate-300 font-bold uppercase tracking-widest">Calculated by NextBazar Financial Core</p>
           </div>
         </div>
       </div>
