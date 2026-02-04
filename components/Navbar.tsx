@@ -48,10 +48,10 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
             {isAdmin && (
               <button 
                 onClick={() => onNavigate('admin')}
-                className="hidden lg:flex items-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-2 rounded-full hover:bg-blue-100 transition"
+                className="flex items-center gap-2 text-[10px] font-black text-white bg-blue-600 px-4 py-2.5 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-200 uppercase tracking-widest"
               >
-                <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
-                DASHBOARD
+                <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                Admin Panel
               </button>
             )}
 
@@ -71,21 +71,21 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
               <div className="flex items-center gap-3 border-l pl-6">
                 <button 
                   onClick={() => onNavigate('orders')}
-                  className="hidden sm:block text-sm font-semibold text-slate-600 hover:text-orange-500"
+                  className="hidden sm:block text-xs font-black text-slate-600 hover:text-orange-500 uppercase tracking-widest"
                 >
-                  My Orders
+                  Orders
                 </button>
                 <button 
                   onClick={signOut}
-                  className="text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition"
+                  className="text-[10px] font-black text-red-500 hover:bg-red-50 px-3 py-2 rounded-xl transition uppercase tracking-widest"
                 >
-                  LOGOUT
+                  Logout
                 </button>
               </div>
             ) : (
               <button 
                 onClick={() => onNavigate('login')}
-                className="bg-slate-900 text-white px-6 py-3 rounded-2xl text-sm font-bold hover:bg-slate-800 transition active:scale-95 shadow-lg shadow-slate-200"
+                className="bg-slate-900 text-white px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-800 transition active:scale-95 shadow-lg shadow-slate-200"
               >
                 Login
               </button>
