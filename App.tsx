@@ -51,10 +51,17 @@ const MainContent: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white">
-        <div className="text-4xl font-black mb-4 tracking-tighter animate-pulse">NEXT<span className="text-orange-500">BAZAR</span></div>
-        <div className="w-48 h-1 bg-slate-800 rounded-full overflow-hidden">
-          <div className="w-1/3 h-full bg-orange-500 animate-[loading_1.5s_infinite_ease-in-out]"></div>
+        <div className="text-4xl font-black mb-4 tracking-tighter animate-pulse uppercase italic">Next<span className="text-orange-500">Bazar</span></div>
+        <div className="w-48 h-1 bg-slate-800 rounded-full overflow-hidden relative">
+          <div className="absolute top-0 left-0 h-full bg-orange-500 animate-loading-bar w-full"></div>
         </div>
+        <style>{`
+          @keyframes loading-bar {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          .animate-loading-bar { animation: loading-bar 1.5s infinite linear; }
+        `}</style>
       </div>
     );
   }
@@ -65,7 +72,9 @@ const MainContent: React.FC = () => {
       case 'product': return selectedProduct ? <ProductPage product={selectedProduct} /> : <HomePage products={products} onProductClick={onProductClick} />;
       case 'cart': return <CartPage onCheckout={() => navigate('checkout')} onShop={() => navigate('home')} />;
       case 'checkout': return <CheckoutPage onComplete={() => navigate('orders')} />;
-      case 'admin': return isAdmin ? <AdminDashboard /> : <div className="p-20 text-center font-black text-red-600">UNAUTHORIZED ACCESS</div>;
+      case 'admin': 
+        if (!user) return <Login onAuthSuccess={() => navigate('admin')} />;
+        return isAdmin ? <AdminDashboard /> : <div className="p-20 text-center font-black text-red-600 bg-red-50 rounded-[3rem] m-8 border-4 border-dashed border-red-100 uppercase tracking-[0.2em]">ACCESS DENIED: ADMIN PRIVILEGES REQUIRED</div>;
       case 'orders': return user ? <OrdersHistory /> : <Login onAuthSuccess={() => navigate('orders')} />;
       case 'login': return <Login onAuthSuccess={() => navigate('home')} />;
       default: return <HomePage products={products} onProductClick={onProductClick} />;
@@ -77,18 +86,18 @@ const MainContent: React.FC = () => {
       {currentPage !== 'admin' && <Navbar onNavigate={navigate} />}
       <main className="flex-1">{renderPage()}</main>
       {currentPage !== 'admin' && (
-        <footer className="bg-white border-t py-12 px-4">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
+        <footer className="bg-white border-t py-16 px-6">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
             <div className="flex flex-col -space-y-1">
-              <span className="text-xl font-black text-slate-900 tracking-tighter uppercase">Next<span className="text-orange-500">Bazar</span></span>
-              <span className="text-[10px] font-bold text-slate-400">MADE IN BANGLADESH</span>
+              <span className="text-2xl font-black text-slate-900 tracking-tighter uppercase">Next<span className="text-orange-500">Bazar</span></span>
+              <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em]">CRAFTED IN BANGLADESH</span>
             </div>
-            <div className="flex gap-8 text-xs font-bold text-slate-400 uppercase tracking-widest">
-              <span onClick={() => navigate('home')} className="hover:text-orange-500 cursor-pointer transition">Shop</span>
-              <span onClick={() => navigate('orders')} className="hover:text-orange-500 cursor-pointer transition">My Orders</span>
-              <span className="hover:text-orange-500 cursor-pointer transition">Contact</span>
+            <div className="flex gap-10 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+              <span onClick={() => navigate('home')} className="hover:text-orange-500 cursor-pointer transition">Store</span>
+              <span onClick={() => navigate('orders')} className="hover:text-orange-500 cursor-pointer transition">Tracking</span>
+              <span className="hover:text-orange-500 cursor-pointer transition">Policy</span>
             </div>
-            <p className="text-[10px] text-slate-300 font-bold uppercase tracking-tighter">© 2024 NEXTBAZAR OS - PRODUCTION BUILD</p>
+            <p className="text-[9px] text-slate-300 font-black uppercase tracking-[0.2em] italic">© 2024 NEXTBAZAR OS - PRODUCTION SECURE</p>
           </div>
         </footer>
       )}
