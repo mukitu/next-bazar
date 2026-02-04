@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useCart } from '../context/CartContext';
-import { CURRENCY_SYMBOL, SHIPPING_DHAKA, SHIPPING_OUTSIDE } from '../constants';
+import { CURRENCY_SYMBOL } from '../constants';
 
 interface CartPageProps {
   onCheckout: () => void;
@@ -9,10 +9,6 @@ interface CartPageProps {
 
 const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
   const { cart, updateQuantity, removeFromCart, subtotal } = useCart();
-  const [region, setRegion] = useState<'DHAKA' | 'OUTSIDE'>('DHAKA');
-
-  const shippingCharge = region === 'DHAKA' ? SHIPPING_DHAKA : SHIPPING_OUTSIDE;
-  const grandTotal = subtotal + shippingCharge;
 
   if (cart.length === 0) {
     return (
@@ -36,7 +32,7 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-6">
           {cart.map(item => (
-            <div key={item.product.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 flex gap-6 items-center shadow-sm">
+            <div key={item.product.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 flex gap-6 items-center shadow-sm transition hover:shadow-md">
               <img src={item.product.images[0]} className="w-24 h-24 object-cover rounded-2xl border bg-slate-50" alt="" />
               <div className="flex-1">
                 <h3 className="font-black text-slate-900 uppercase tracking-tighter text-sm italic">{item.product.name}</h3>
@@ -58,45 +54,23 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
 
         <div className="lg:col-span-1">
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl sticky top-24">
-            <h2 className="text-xl font-black mb-8 uppercase tracking-tighter italic">Checkout <span className="text-orange-500">Plan</span></h2>
+            <h2 className="text-xl font-black mb-8 uppercase tracking-tighter italic">Order <span className="text-orange-500">Summary</span></h2>
             
-            {/* Delivery Selection */}
-            <div className="mb-8">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Select Destination</label>
-              <div className="grid grid-cols-2 gap-3">
-                <button 
-                  onClick={() => setRegion('DHAKA')}
-                  className={`py-4 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${region === 'DHAKA' ? 'bg-slate-900 text-white border-slate-900 shadow-lg' : 'bg-white text-slate-400 border-slate-50 hover:border-slate-100'}`}
-                >
-                  Inside Dhaka
-                </button>
-                <button 
-                  onClick={() => setRegion('OUTSIDE')}
-                  className={`py-4 rounded-xl text-[9px] font-black uppercase tracking-widest border-2 transition-all ${region === 'OUTSIDE' ? 'bg-slate-900 text-white border-slate-900 shadow-lg' : 'bg-white text-slate-400 border-slate-50 hover:border-slate-100'}`}
-                >
-                  Outside Dhaka
-                </button>
-              </div>
-            </div>
-
             <div className="space-y-4 mb-10 text-[10px] font-black uppercase tracking-widest">
               <div className="flex justify-between text-slate-400">
                 <span>Items Subtotal</span>
                 <span className="text-slate-900">{CURRENCY_SYMBOL}{subtotal}</span>
               </div>
-              <div className="flex justify-between text-slate-400">
-                <span>Shipping Charge</span>
-                <span className="text-slate-900">{CURRENCY_SYMBOL}{shippingCharge}</span>
-              </div>
+              <p className="text-[9px] text-slate-400 font-bold uppercase mt-4">* Shipping & other charges calculated at checkout</p>
               <div className="border-t border-slate-50 pt-6 flex justify-between text-2xl font-black tracking-tighter">
-                <span>GRAND TOTAL</span>
-                <span className="text-orange-600">{CURRENCY_SYMBOL}{grandTotal}</span>
+                <span>SUBTOTAL</span>
+                <span className="text-orange-600">{CURRENCY_SYMBOL}{subtotal}</span>
               </div>
             </div>
             <button onClick={onCheckout} className="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 transition-all hover:scale-[1.02] active:scale-95">
-              PROCEED TO SECURE PAY
+              PROCEED TO CHECKOUT
             </button>
-            <p className="text-[8px] text-center mt-6 text-slate-300 font-bold uppercase tracking-widest">Calculated by NextBazar Financial Core</p>
+            <p className="text-[8px] text-center mt-6 text-slate-300 font-bold uppercase tracking-widest">NextBazar Fast Secure System</p>
           </div>
         </div>
       </div>
