@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +18,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
   const [phone, setPhone] = useState(user?.phone || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Use getTotals from CartContext to get accurate figures based on current selection
   const { base, shipping, paymentCharge, total } = getTotals(paymentMethod, region);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,6 +29,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
 
     setIsSubmitting(true);
     try {
+      // 1. Create Order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -39,7 +40,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
           shipping_address: `${address}, Phone: ${phone}`,
           shipping_region: region === 'DHAKA' ? 'Inside Dhaka' : 'Outside Dhaka',
           shipping_charge: shipping,
-          bkash_tx_id: txId,
+          bkash_tx_id: paymentMethod === 'BKASH' ? txId : null,
           bkash_charge: paymentMethod === 'BKASH' ? paymentCharge : 0,
           cod_charge: paymentMethod === 'COD' ? paymentCharge : 0
         })
@@ -47,6 +48,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
 
       if (orderError) throw orderError;
 
+      // 2. Insert Order Items
       const orderItems = cart.map(item => ({
         order_id: order.id,
         product_id: item.product.id,
@@ -57,10 +59,12 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
       const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
       if (itemsError) throw itemsError;
 
+      // 3. Clear Cart and Finish
       clearCart();
-      alert("Order placed successfully!");
+      alert("Success! Your order has been recorded.");
       onComplete();
     } catch (err: any) {
+      console.error("Order process error:", err);
       alert("Order failed: " + err.message);
     } finally {
       setIsSubmitting(false);
@@ -101,7 +105,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
                 required
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Detailed Shipping Address..."
+                placeholder="Detailed Shipping Address (House, Road, Area)..."
                 className="w-full bg-slate-50 border-none rounded-2xl p-5 text-sm font-bold focus:ring-2 focus:ring-orange-500 h-32"
               />
               <input 
@@ -109,7 +113,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="Mobile Number (e.g. 01711223344)"
+                placeholder="Mobile Number (e.g. 01XXXXXXXXX)"
                 className="w-full bg-slate-50 border-none rounded-2xl p-5 text-sm font-bold focus:ring-2 focus:ring-orange-500"
               />
             </div>
@@ -124,17 +128,17 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <div 
                 onClick={() => setPaymentMethod('COD')}
-                className={`cursor-pointer border-2 rounded-2xl p-6 transition-all ${paymentMethod === 'COD' ? 'border-slate-900 bg-slate-900 text-white shadow-xl' : 'border-slate-50 text-slate-400'}`}
+                className={`cursor-pointer border-2 rounded-2xl p-6 transition-all ${paymentMethod === 'COD' ? 'border-slate-900 bg-slate-900 text-white shadow-xl' : 'border-slate-50 text-slate-400 hover:border-slate-200'}`}
               >
-                <p className="font-black uppercase tracking-widest text-[10px] mb-1">Method 01</p>
+                <p className="font-black uppercase tracking-widest text-[10px] mb-1">Option 01</p>
                 <h3 className="font-black text-xl tracking-tighter uppercase">Cash On Delivery</h3>
-                <p className={`text-[9px] mt-2 font-bold uppercase ${paymentMethod === 'COD' ? 'text-slate-400' : 'text-slate-300'}`}>+৳10 COD Charge</p>
+                <p className={`text-[9px] mt-2 font-bold uppercase ${paymentMethod === 'COD' ? 'text-slate-400' : 'text-slate-300'}`}>+৳10 Service Charge</p>
               </div>
               <div 
                 onClick={() => setPaymentMethod('BKASH')}
-                className={`cursor-pointer border-2 rounded-2xl p-6 transition-all ${paymentMethod === 'BKASH' ? 'border-pink-600 bg-pink-600 text-white shadow-xl' : 'border-slate-50 text-slate-400'}`}
+                className={`cursor-pointer border-2 rounded-2xl p-6 transition-all ${paymentMethod === 'BKASH' ? 'border-pink-600 bg-pink-600 text-white shadow-xl' : 'border-slate-50 text-slate-400 hover:border-slate-200'}`}
               >
-                <p className="font-black uppercase tracking-widest text-[10px] mb-1">Method 02</p>
+                <p className="font-black uppercase tracking-widest text-[10px] mb-1">Option 02</p>
                 <h3 className="font-black text-xl tracking-tighter uppercase">bKash Manual</h3>
                 <p className={`text-[9px] mt-2 font-bold uppercase ${paymentMethod === 'BKASH' ? 'text-pink-200' : 'text-slate-300'}`}>+1.85% Send Money Fee</p>
               </div>
@@ -142,25 +146,28 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
 
             {paymentMethod === 'BKASH' && (
               <div className="bg-pink-50 p-8 rounded-[2rem] border border-pink-100 animate-fadeIn">
-                <div className="flex justify-between items-center mb-6">
+                <div className="flex flex-col md:flex-row justify-between md:items-center gap-6 mb-6">
                   <div>
-                    <p className="text-[10px] font-black text-pink-600 uppercase tracking-widest mb-1">Send Money to</p>
+                    <p className="text-[10px] font-black text-pink-600 uppercase tracking-widest mb-1">Personal BKash Number</p>
                     <p className="text-2xl font-black text-slate-900 tracking-tighter">{BKASH_NUMBER}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black text-pink-600 uppercase tracking-widest mb-1">Exact Amount</p>
+                  <div className="md:text-right">
+                    <p className="text-[10px] font-black text-pink-600 uppercase tracking-widest mb-1">Final Amount (with fee)</p>
                     <p className="text-2xl font-black text-slate-900 tracking-tighter">{CURRENCY_SYMBOL}{total}</p>
                   </div>
                 </div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Transaction ID</label>
-                <input 
-                  type="text" 
-                  required
-                  placeholder="Enter 10-digit ID" 
-                  value={txId} 
-                  onChange={(e) => setTxId(e.target.value)}
-                  className="w-full bg-white border-2 border-pink-100 rounded-xl p-4 uppercase font-mono font-bold text-center focus:ring-2 focus:ring-pink-500 outline-none"
-                />
+                <div className="space-y-4">
+                  <p className="text-[10px] font-bold text-pink-400 uppercase leading-relaxed">Please "Send Money" the exact amount to our bKash number, then paste your Transaction ID below.</p>
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Transaction ID</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="e.g. BXA1234567" 
+                    value={txId} 
+                    onChange={(e) => setTxId(e.target.value.toUpperCase())}
+                    className="w-full bg-white border-2 border-pink-100 rounded-xl p-4 uppercase font-mono font-bold text-center focus:ring-2 focus:ring-pink-500 outline-none"
+                  />
+                </div>
               </div>
             )}
           </section>
@@ -169,12 +176,12 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl sticky top-24 border border-slate-800">
-            <h2 className="text-xl font-black mb-8 uppercase tracking-tighter border-b border-slate-800 pb-6 italic">Order <span className="text-orange-500">Summary</span></h2>
+            <h2 className="text-xl font-black mb-8 uppercase tracking-tighter border-b border-slate-800 pb-6 italic">Checkout <span className="text-orange-500">Bill</span></h2>
             <div className="space-y-4 mb-10 text-[10px] font-black uppercase tracking-widest">
               <div className="flex justify-between text-slate-500"><span>Items Subtotal</span><span className="text-white">{CURRENCY_SYMBOL}{base}</span></div>
-              <div className="flex justify-between text-slate-500"><span>Delivery Charge</span><span className="text-white">{CURRENCY_SYMBOL}{shipping}</span></div>
-              <div className="flex justify-between text-slate-500"><span>Payment Fee</span><span className="text-white">{CURRENCY_SYMBOL}{paymentCharge}</span></div>
-              <div className="flex justify-between font-black text-2xl pt-6 border-t border-slate-800 mt-6 tracking-tighter text-orange-500">
+              <div className="flex justify-between text-slate-500"><span>Shipping ({region === 'DHAKA' ? 'Dhaka' : 'Outside'})</span><span className="text-white">{CURRENCY_SYMBOL}{shipping}</span></div>
+              <div className="flex justify-between text-slate-500"><span>{paymentMethod} Fee</span><span className="text-white">{CURRENCY_SYMBOL}{paymentCharge}</span></div>
+              <div className="flex justify-between font-black text-3xl pt-8 border-t border-slate-800 mt-6 tracking-tighter text-orange-500">
                 <span>TOTAL</span>
                 <span>{CURRENCY_SYMBOL}{total}</span>
               </div>
@@ -182,11 +189,11 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full bg-white text-slate-900 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-orange-500 hover:text-white transition-all disabled:opacity-50 active:scale-95"
+              className="w-full bg-white text-slate-900 py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl hover:bg-orange-600 hover:text-white transition-all disabled:opacity-50 active:scale-95"
             >
-              {isSubmitting ? 'PROCESSING...' : 'CONFIRM ORDER'}
+              {isSubmitting ? 'VERIFYING...' : 'PLACE ORDER NOW'}
             </button>
-            <p className="text-[8px] text-center mt-6 text-slate-500 font-bold uppercase tracking-widest">Secure checkout by NextBazar OS</p>
+            <p className="text-[8px] text-center mt-6 text-slate-500 font-bold uppercase tracking-[0.3em]">Encrypted Secure Transaction</p>
           </div>
         </div>
       </form>
