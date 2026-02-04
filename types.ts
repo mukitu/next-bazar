@@ -1,4 +1,3 @@
-
 export type UserRole = 'user' | 'admin';
 
 export interface Profile {
@@ -52,6 +51,8 @@ export interface Order {
   total_amount: number;
   payment_method: PaymentMethod;
   shipping_address: string;
+  shipping_region: string;
+  shipping_charge: number;
   bkash_tx_id?: string;
   bkash_charge: number;
   cod_charge: number;
