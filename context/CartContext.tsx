@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Product, CartItem } from '../types.ts';
-import { COD_CHARGE, BKASH_CHARGE_RATE, SHIPPING_DHAKA, SHIPPING_OUTSIDE } from '../constants.ts';
+import { Product, CartItem } from '../types';
+import { COD_CHARGE, BKASH_CHARGE_RATE, SHIPPING_DHAKA, SHIPPING_OUTSIDE } from '../constants';
 
 interface Totals {
   base: number;
@@ -24,13 +24,19 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
 
+  // Load cart from local storage on mount
   useEffect(() => {
     const saved = localStorage.getItem('amar_bazar_cart');
     if (saved) {
-      try { setCart(JSON.parse(saved)); } catch (e) { console.error(e); }
+      try { 
+        setCart(JSON.parse(saved)); 
+      } catch (e) { 
+        console.error("Cart parsing error:", e); 
+      }
     }
   }, []);
 
+  // Sync cart to local storage
   useEffect(() => {
     localStorage.setItem('amar_bazar_cart', JSON.stringify(cart));
   }, [cart]);
@@ -47,10 +53,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const removeFromCart = (productId: string) => setCart(prev => prev.filter(item => item.product.id !== productId));
+  const removeFromCart = (productId: string) => {
+    setCart(prev => prev.filter(item => item.product.id !== productId));
+  };
 
   const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) { removeFromCart(productId); return; }
+    if (quantity <= 0) {
+      removeFromCart(productId);
+      return;
+    }
     setCart(prev => prev.map(item => item.product.id === productId ? { ...item, quantity } : item));
   };
 
