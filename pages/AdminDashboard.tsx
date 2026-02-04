@@ -96,6 +96,35 @@ const AdminDashboard: React.FC = () => {
     else loadData();
   };
 
+  const deleteOrder = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this order? This action cannot be undone.")) return;
+    const { error } = await supabase.from('orders').delete().eq('id', id);
+    if (error) alert(error.message);
+    else loadData();
+  };
+
+  const deleteProduct = async (id: string) => {
+    if (!window.confirm("Delete this product?")) return;
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) alert(error.message);
+    else loadData();
+  };
+
+  const startEditProduct = (p: Product) => {
+    setEditingProduct(p);
+    setFormState({
+      name: p.name,
+      price: p.price.toString(),
+      stock: p.stock.toString(),
+      category_id: p.category_id,
+      description: p.description,
+      image_url: p.images[0] || '',
+      is_featured: p.is_featured,
+      is_flash_sale: p.is_flash_sale
+    });
+    setModalMode('edit');
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center">
       <div className="text-center animate-pulse">
@@ -107,7 +136,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
-      {/* Sidebar - Desktop Only */}
+      {/* Sidebar */}
       <aside className="w-full lg:w-72 bg-slate-900 text-white flex flex-col p-8 space-y-12 lg:sticky lg:top-0 lg:h-screen shadow-2xl z-20">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-orange-600 rounded-[1.2rem] flex items-center justify-center font-black text-white shadow-xl shadow-orange-600/20 text-xl italic">NB</div>
@@ -198,14 +227,21 @@ const AdminDashboard: React.FC = () => {
                           {order.status}
                         </span>
                       </td>
-                      <td className="px-10 py-8">
+                      <td className="px-10 py-8 flex items-center gap-2">
                         <select 
                           onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                          className="bg-slate-100 rounded-2xl p-4 text-[10px] font-black uppercase outline-none focus:ring-2 focus:ring-orange-500 border-none transition-all cursor-pointer hover:bg-slate-200"
+                          className="bg-slate-100 rounded-xl p-3 text-[10px] font-black uppercase outline-none focus:ring-2 focus:ring-orange-500 border-none transition-all cursor-pointer"
                           value={order.status}
                         >
                           {ORDER_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
+                        <button 
+                          onClick={() => deleteOrder(order.id)}
+                          className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition shadow-sm"
+                          title="Delete Order"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -215,7 +251,39 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Product Modal with File Upload */}
+        {activeTab === 'products' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {products.map(p => (
+              <div key={p.id} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-2xl transition-all">
+                <div className="aspect-video relative">
+                  <img src={p.images[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute top-4 right-4 flex gap-2">
+                    <button onClick={() => startEditProduct(p)} className="p-3 bg-white/90 backdrop-blur rounded-xl text-slate-900 shadow-xl hover:bg-orange-500 hover:text-white transition">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                    <button onClick={() => deleteProduct(p.id)} className="p-3 bg-white/90 backdrop-blur rounded-xl text-red-500 shadow-xl hover:bg-red-500 hover:text-white transition">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </div>
+                </div>
+                <div className="p-8">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-black text-slate-900 uppercase tracking-tighter text-lg italic">{p.name}</h3>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{categories.find(c => c.id === p.category_id)?.name}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-black text-orange-600 text-xl tracking-tighter">{CURRENCY_SYMBOL}{p.price}</p>
+                      <p className={`text-[9px] font-black uppercase tracking-widest ${p.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>Stock: {p.stock}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Product Modal */}
         {modalMode !== 'none' && (
           <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-3xl z-[100] flex items-center justify-center p-4">
             <div className="bg-white w-full max-w-3xl rounded-[4rem] p-10 lg:p-16 shadow-2xl animate-fadeIn overflow-y-auto max-h-[90vh] scrollbar-hide border border-white/20">
@@ -235,13 +303,13 @@ const AdminDashboard: React.FC = () => {
                     <div>
                       <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-1">Asset Image (Auto Upload)</label>
                       <div className="relative group">
-                        <div className={`aspect-square bg-slate-50 rounded-[3rem] overflow-hidden border-4 border-dashed border-slate-100 flex items-center justify-center relative transition-all ${uploading ? 'animate-pulse' : ''}`}>
+                        <div className={`aspect-square bg-slate-50 rounded-[3rem] overflow-hidden border-4 border-dashed border-slate-100 flex items-center justify-center relative transition-all ${uploading ? 'animate-pulse' : 'hover:border-orange-200'}`}>
                           {formState.image_url ? (
                             <img src={formState.image_url} className="w-full h-full object-cover" />
                           ) : (
                             <div className="text-center p-8">
                                <svg className="w-12 h-12 text-slate-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                               <p className="text-[9px] font-black text-slate-300 uppercase tracking-widest">Select Image</p>
+                               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Click to Upload Image</p>
                             </div>
                           )}
                           <input 
@@ -254,6 +322,16 @@ const AdminDashboard: React.FC = () => {
                           {uploading && <div className="absolute inset-0 bg-white/80 flex items-center justify-center"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div></div>}
                         </div>
                         {formState.image_url && <button type="button" onClick={() => setFormState({...formState, image_url: ''})} className="absolute -top-3 -right-3 w-10 h-10 bg-red-500 text-white rounded-2xl shadow-xl flex items-center justify-center font-black text-lg">×</button>}
+                      </div>
+                      <div className="mt-4">
+                        <label className="block text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Or Paste Image URL</label>
+                        <input 
+                          type="text" 
+                          value={formState.image_url} 
+                          onChange={e => setFormState({...formState, image_url: e.target.value})}
+                          placeholder="https://..."
+                          className="w-full bg-slate-50 border-none rounded-xl p-3 text-[10px] font-bold italic"
+                        />
                       </div>
                     </div>
                   </div>
