@@ -41,6 +41,7 @@ const MainContent: React.FC = () => {
 
   const navigate = (page: string) => {
     window.location.hash = page;
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
   const onProductClick = (p: Product) => {
@@ -50,11 +51,19 @@ const MainContent: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white">
-        <div className="text-4xl font-black mb-4 tracking-tighter animate-pulse uppercase italic">Next<span className="text-orange-500">Bazar</span></div>
-        <div className="w-48 h-1 bg-slate-800 rounded-full overflow-hidden relative">
-          <div className="absolute top-0 left-0 h-full bg-orange-500 animate-loading-bar w-full"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC]">
+        <div className="relative">
+          <div className="text-3xl font-black mb-2 tracking-tighter uppercase italic text-slate-900">Next<span className="text-orange-500">Bazar</span></div>
+          <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-full bg-orange-500 animate-[loading_1.5s_infinite_linear] w-[40%]"></div>
+          </div>
         </div>
+        <style>{`
+          @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(300%); }
+          }
+        `}</style>
       </div>
     );
   }
@@ -68,23 +77,7 @@ const MainContent: React.FC = () => {
       case 'admin': 
         if (!user) return <Login onAuthSuccess={() => navigate('admin')} />;
         if (isAdmin) return <AdminDashboard />;
-        return (
-          <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50">
-            <div className="max-w-md w-full bg-white p-10 rounded-[3rem] shadow-2xl border-4 border-dashed border-red-100 text-center">
-              <div className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m0 0v2m0-2h2m-2 0H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-2">Access Denied</h2>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">
-                Current Role: <span className="text-red-600">{user.role}</span>
-              </p>
-              <div className="flex flex-col gap-3">
-                <button onClick={() => navigate('home')} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg">Back to Store</button>
-                <button onClick={signOut} className="w-full bg-red-50 text-red-600 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest">Logout & Retry</button>
-              </div>
-            </div>
-          </div>
-        );
+        return <HomePage products={products} onProductClick={onProductClick} />;
       case 'orders': return user ? <OrdersHistory /> : <Login onAuthSuccess={() => navigate('orders')} />;
       case 'login': return <Login onAuthSuccess={() => navigate('home')} />;
       default: return <HomePage products={products} onProductClick={onProductClick} />;
@@ -92,21 +85,22 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
-      {currentPage !== 'admin' && <Navbar onNavigate={navigate} />}
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+      {currentPage !== 'admin' && <Navbar onNavigate={navigate} currentPage={currentPage} />}
       <main className="flex-1">{renderPage()}</main>
       {currentPage !== 'admin' && (
-        <footer className="bg-white border-t py-16 px-6">
+        <footer className="bg-white border-t py-12 md:py-20 px-6 pb-28 md:pb-20">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
-            <div className="flex flex-col -space-y-1">
-              <span className="text-2xl font-black text-slate-900 tracking-tighter uppercase">Next<span className="text-orange-500">Bazar</span></span>
-              <span className="text-[10px] font-bold text-slate-400 tracking-[0.2em]">CRAFTED IN BANGLADESH</span>
+            <div className="flex flex-col -space-y-1 items-center md:items-start">
+              <span className="text-xl font-black text-slate-900 tracking-tighter uppercase">Next<span className="text-orange-500">Bazar</span></span>
+              <span className="text-[8px] font-bold text-slate-400 tracking-[0.2em]">FAST SECURE SHOPPING</span>
             </div>
-            <div className="flex gap-10 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-              <span onClick={() => navigate('home')} className="hover:text-orange-500 cursor-pointer transition">Store</span>
-              <span onClick={() => navigate('orders')} className="hover:text-orange-500 cursor-pointer transition">Tracking</span>
+            <div className="flex gap-8 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+              <span onClick={() => navigate('home')} className="hover:text-orange-500 cursor-pointer">Store</span>
+              <span onClick={() => navigate('orders')} className="hover:text-orange-500 cursor-pointer">Orders</span>
+              <span className="text-slate-300">Privacy</span>
             </div>
-            <p className="text-[9px] text-slate-300 font-black uppercase tracking-[0.2em] italic">© 2024 NEXTBAZAR OS - PRODUCTION SECURE</p>
+            <p className="text-[8px] text-slate-300 font-black uppercase tracking-widest">© 2024 NextBazar v2.0</p>
           </div>
         </footer>
       )}
