@@ -32,18 +32,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let uid = forceUserId;
       
       if (!uid) {
-        const sessionRes = await withTimeout(supabase.auth.getSession(), 3000).catch(() => ({ data: { session: null } }));
-        uid = sessionRes.data.session?.user?.id;
+        // Fix: Cast sessionRes to any to resolve 'unknown' type error on property 'data'
+        const sessionRes = await withTimeout(supabase.auth.getSession(), 3000).catch(() => ({ data: { session: null } })) as any;
+        uid = sessionRes.data?.session?.user?.id;
       }
 
       if (uid) {
         // প্রোফাইল চেক করার সময় রিট্রাই (Retry) লজিক
         for (let i = 0; i < 3; i++) {
           try {
-            const { data: profile, error } = await withTimeout(
+            // Fix: Cast withTimeout result to any to resolve '{}' type error during destructuring of 'data' and 'error'
+            const { data: profile, error } = (await withTimeout(
               supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
               3000
-            );
+            )) as any;
             
             if (profile) {
               const profileData = profile as Profile;
