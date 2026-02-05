@@ -106,7 +106,7 @@ const MainContent: React.FC = () => {
               <span onClick={() => navigate('home')} className="hover:text-orange-500 cursor-pointer transition">Store</span>
               <span onClick={() => navigate('orders')} className="hover:text-orange-500 cursor-pointer transition">Tracking</span>
             </div>
-            <p className="text-[9px] text-slate-300 font-black uppercase tracking-[0.2em] italic">© 2026 Made By Nishat</p>
+            <p className="text-[15px] text-slate-300 font-black uppercase tracking-[0.2em] italic">© 2026 Made By Nishat</p>
           </div>
         </footer>
       )}
