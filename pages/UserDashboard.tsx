@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { fetchUserOrders, updateProfile } from '../lib/supabase';
 import { Order } from '../types';
@@ -11,6 +11,9 @@ const UserDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  
+  // Track if form has been initialized to avoid overwriting user input on re-renders
+  const formInitialized = useRef(false);
 
   // Profile Form State
   const [profileForm, setProfileForm] = useState({
@@ -21,7 +24,7 @@ const UserDashboard: React.FC = () => {
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  // Initial Data Load
+  // Load orders only once on mount
   useEffect(() => {
     if (user) {
       const loadOrders = async () => {
@@ -35,39 +38,49 @@ const UserDashboard: React.FC = () => {
         }
       };
       loadOrders();
+    }
+  }, [user?.id]);
 
-      // Set form data only once or when user is first loaded to avoid overwriting during input
+  // Sync form with user data only when it hasn't been initialized or when user ID changes
+  useEffect(() => {
+    if (user && !formInitialized.current) {
       setProfileForm({
         full_name: user.full_name || '',
         phone: user.phone || '',
         address: user.address || ''
       });
+      formInitialized.current = true;
     }
-  }, [user?.id]); // Only re-run if the user ID changes, not the whole user object
+  }, [user]);
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    
     setUpdating(true);
     setMessage(null);
+    
     try {
       // 1. Update in Database
       const updatedProfile = await updateProfile(user.id, profileForm);
       
-      // 2. Refresh Global Context
+      // 2. Force Global Context Update and wait for it
       await refreshProfile(user.id);
       
-      // 3. Keep local form in sync
+      // 3. Ensure local form stays in sync with what was saved
       setProfileForm({
         full_name: updatedProfile.full_name || '',
         phone: updatedProfile.phone || '',
         address: updatedProfile.address || ''
       });
 
-      setMessage({ type: 'success', text: 'Identity sync successful!' });
-      setTimeout(() => setMessage(null), 3000);
+      setMessage({ type: 'success', text: 'Account successfully synced with secure vault!' });
+      
+      // Clear success message after delay
+      setTimeout(() => setMessage(null), 4000);
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Update failed.' });
+      console.error("Update Error:", err);
+      setMessage({ type: 'error', text: err.message || 'Update failed. Check connection.' });
     } finally {
       setUpdating(false);
     }
