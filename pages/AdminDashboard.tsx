@@ -174,10 +174,6 @@ const AdminDashboard: React.FC = () => {
             </button>
           ))}
         </nav>
-
-        <div className="pt-8 border-t border-slate-800">
-           <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Admin Control v2.4</p>
-        </div>
       </aside>
 
       {/* MAIN CONTENT */}
@@ -185,89 +181,35 @@ const AdminDashboard: React.FC = () => {
         <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-8">
           <div>
             <h1 className="text-5xl font-black uppercase italic tracking-tighter text-slate-900 leading-none">{activeTab}</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">Command Terminal / {activeTab}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">Admin Command / {activeTab}</p>
           </div>
           
           <div className="flex gap-4">
             {activeTab === 'products' && (
-               <div className="relative group">
-                 <input 
-                  type="text" 
-                  placeholder="SEARCH ASSETS..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-white border-2 border-slate-100 rounded-2xl px-12 py-4 text-[10px] font-black uppercase tracking-widest focus:border-orange-500 transition-all outline-none"
-                 />
-                 <svg className="w-4 h-4 absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-               </div>
-            )}
-            
-            {activeTab === 'products' && (
               <button onClick={() => { setFormState({ name: '', price: '', discount_price: '', stock: '', category_id: '', description: '', image_url: '', is_featured: false, is_flash_sale: false, rating: '5', review_count: '0' }); setModalMode('add-product'); setEditingProduct(null); }} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 shadow-xl transition-all">Launch Product</button>
-            )}
-            
-            {activeTab === 'categories' && (
-              <button onClick={() => setModalMode('add-category')} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 shadow-xl transition-all">New Category</button>
             )}
           </div>
         </header>
 
         {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
-          <div className="space-y-12 animate-fadeIn">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-               <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Gross Revenue</p>
-                  <p className="text-4xl font-black text-slate-900 tracking-tighter italic">{CURRENCY_SYMBOL}{totalRevenue.toLocaleString()}</p>
-               </div>
-               <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Total Trades</p>
-                  <p className="text-4xl font-black text-slate-900 tracking-tighter italic">{orders.length}</p>
-               </div>
-               <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Pending Logs</p>
-                  <p className="text-4xl font-black text-orange-600 tracking-tighter italic">{pendingOrders}</p>
-               </div>
-               <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Active Assets</p>
-                  <p className="text-4xl font-black text-slate-900 tracking-tighter italic">{products.length}</p>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-               <div className="bg-white p-10 rounded-[3.5rem] border border-slate-100 shadow-sm">
-                  <h3 className="text-xl font-black uppercase tracking-tighter italic mb-8">Recent <span className="text-orange-500">Activity</span></h3>
-                  <div className="space-y-6">
-                    {orders.slice(0, 5).map(o => (
-                      <div key={o.id} className="flex items-center justify-between py-4 border-b border-slate-50 last:border-0">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center font-black text-[10px] text-slate-300">#{o.id.slice(0,3)}</div>
-                          <div>
-                            <p className="text-[10px] font-black text-slate-900 uppercase">New Transaction</p>
-                            <p className="text-[8px] font-bold text-slate-400 uppercase">{new Date(o.created_at).toLocaleTimeString()}</p>
-                          </div>
-                        </div>
-                        <p className="text-xs font-black text-slate-900">{CURRENCY_SYMBOL}{o.total_amount}</p>
-                      </div>
-                    ))}
-                  </div>
-               </div>
-
-               <div className="bg-slate-900 p-12 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden">
-                 <div className="absolute bottom-0 right-0 w-64 h-64 bg-orange-600/10 rounded-full -mr-32 -mb-32 blur-3xl"></div>
-                 <h3 className="text-xl font-black uppercase tracking-tighter italic mb-6">System <span className="text-orange-500">Pulse</span></h3>
-                 <p className="text-[10px] text-slate-400 font-bold uppercase leading-relaxed mb-10">All systems operational. Database response time 24ms. Cloud assets secured. Sync enabled.</p>
-                 <div className="flex gap-4">
-                    <div className="h-1 flex-1 bg-orange-500 rounded-full"></div>
-                    <div className="h-1 flex-1 bg-slate-800 rounded-full"></div>
-                    <div className="h-1 flex-1 bg-slate-800 rounded-full"></div>
-                 </div>
-               </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 animate-fadeIn">
+             <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Gross Revenue</p>
+                <p className="text-4xl font-black text-slate-900 tracking-tighter italic">{CURRENCY_SYMBOL}{totalRevenue.toLocaleString()}</p>
+             </div>
+             <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Total Trades</p>
+                <p className="text-4xl font-black text-slate-900 tracking-tighter italic">{orders.length}</p>
+             </div>
+             <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Pending Logs</p>
+                <p className="text-4xl font-black text-orange-600 tracking-tighter italic">{pendingOrders}</p>
+             </div>
           </div>
         )}
 
-        {/* ORDERS TAB */}
+        {/* ORDERS TAB (Detailed View) */}
         {activeTab === 'orders' && (
            <div className="bg-white rounded-[3rem] border border-slate-100 overflow-hidden shadow-xl animate-fadeIn">
              <div className="overflow-x-auto">
@@ -275,10 +217,10 @@ const AdminDashboard: React.FC = () => {
                  <thead className="bg-slate-50 border-b border-slate-100">
                     <tr className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                        <th className="px-10 py-8">Reference</th>
-                       <th className="px-10 py-8">Client Identity</th>
-                       <th className="px-10 py-8">Asset Pay</th>
-                       <th className="px-10 py-8">Status Update</th>
-                       <th className="px-10 py-8 text-right">Operation</th>
+                       <th className="px-10 py-8">Customer & Contacts</th>
+                       <th className="px-10 py-8">Asset Value & Method</th>
+                       <th className="px-10 py-8">Status</th>
+                       <th className="px-10 py-8 text-right">Action</th>
                     </tr>
                  </thead>
                  <tbody className="divide-y divide-slate-50">
@@ -287,16 +229,20 @@ const AdminDashboard: React.FC = () => {
                       return (
                         <tr key={order.id} className="hover:bg-slate-50/50 transition-colors group">
                           <td className="px-10 py-10">
-                            <p className="font-mono text-[10px] text-slate-400 group-hover:text-slate-900 transition-colors">#{order.id.slice(0,12)}</p>
+                            <p className="font-mono text-[10px] text-slate-400 group-hover:text-slate-900 transition-colors font-bold">#{order.id.slice(0,12)}</p>
                             <p className="text-[8px] font-bold text-slate-300 uppercase mt-2">{new Date(order.created_at).toLocaleString()}</p>
                           </td>
                           <td className="px-10 py-10">
-                            <p className="font-black text-slate-900 uppercase text-xs italic">{profile?.full_name || 'Anonymous'}</p>
-                            <p className="text-[9px] text-slate-400 font-bold mt-1">{profile?.phone || 'No Linked Phone'}</p>
+                            <div className="space-y-1">
+                              <p className="font-black text-slate-900 uppercase text-xs italic">{profile?.full_name || 'Anonymous User'}</p>
+                              <p className="text-[10px] text-slate-500 font-bold">{profile?.email || 'No email link'}</p>
+                              <p className="text-[10px] text-orange-600 font-black uppercase tracking-tighter bg-orange-50 px-2 py-0.5 rounded w-max">{order.shipping_address.split('|')[1]?.replace('Phone:', '').trim() || profile?.phone || 'No phone provided'}</p>
+                              <p className="text-[9px] text-slate-400 font-medium uppercase leading-tight line-clamp-2 max-w-[250px]">{order.shipping_address.split('|')[0].trim()}</p>
+                            </div>
                           </td>
                           <td className="px-10 py-10">
                             <p className="text-xl font-black text-slate-900 tracking-tighter italic">{CURRENCY_SYMBOL}{order.total_amount}</p>
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
                                <span className="text-[8px] font-black uppercase text-slate-400 px-2 py-0.5 border border-slate-100 rounded">{order.payment_method}</span>
                                {order.bkash_tx_id && <span className="text-[8px] font-mono text-pink-600 bg-pink-50 px-2 py-0.5 rounded">TX: {order.bkash_tx_id}</span>}
                             </div>
@@ -311,7 +257,7 @@ const AdminDashboard: React.FC = () => {
                              </select>
                           </td>
                           <td className="px-10 py-10 text-right">
-                             <button onClick={() => { if(window.confirm("Purge order record?")) supabase.from('orders').delete().eq('id', order.id).then(() => loadData()); }} className="bg-red-50 text-red-400 hover:bg-red-600 hover:text-white p-4 rounded-2xl transition-all shadow-sm"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                             <button onClick={() => { if(window.confirm("Purge record?")) supabase.from('orders').delete().eq('id', order.id).then(() => loadData()); }} className="text-red-300 hover:text-red-600 transition-colors p-2"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
                           </td>
                         </tr>
                       );
@@ -324,24 +270,18 @@ const AdminDashboard: React.FC = () => {
 
         {/* PRODUCTS TAB */}
         {activeTab === 'products' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-8 animate-fadeIn">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 animate-fadeIn">
             {filteredProducts.map(p => (
               <div key={p.id} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm group hover:shadow-xl transition-all flex flex-col">
                 <div className="relative aspect-square rounded-3xl overflow-hidden mb-6 bg-slate-50">
                    <img src={p.images[0]} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
                    <div className="absolute top-4 left-4 flex gap-2">
-                      {p.stock < 5 && <span className="bg-red-600 text-white text-[7px] font-black px-2 py-1 rounded uppercase">Low Stock</span>}
-                      {p.is_featured && <span className="bg-slate-900 text-white text-[7px] font-black px-2 py-1 rounded uppercase">Featured</span>}
+                      <span className="bg-slate-900 text-white text-[7px] font-black px-2 py-1 rounded uppercase">⭐ {p.rating || '5.0'}</span>
                    </div>
                 </div>
-                <h3 className="font-black uppercase text-xs italic mb-2 truncate text-slate-900 tracking-tighter">{p.name}</h3>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-6">{categories.find(c => c.id === p.category_id)?.name || 'Misc Asset'}</p>
-                
+                <h3 className="font-black uppercase text-xs italic mb-2 truncate text-slate-900">{p.name}</h3>
                 <div className="mt-auto flex justify-between items-center pt-6 border-t border-slate-50">
-                  <div>
-                    <span className="text-slate-900 font-black text-xl italic">{CURRENCY_SYMBOL}{p.discount_price || p.price}</span>
-                    <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">{p.stock} Units In Vault</p>
-                  </div>
+                  <span className="text-slate-900 font-black text-xl italic">{CURRENCY_SYMBOL}{p.discount_price || p.price}</span>
                   <button onClick={() => startEditProduct(p)} className="bg-slate-900 text-white px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-500 transition-all shadow-lg active:scale-95 italic">Edit</button>
                 </div>
               </div>
@@ -349,7 +289,83 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* CATEGORIES TAB */}
+        {/* MODAL: PRODUCT (Enhanced with Manual Rating/Reviews) */}
+        {(modalMode === 'add-product' || modalMode === 'edit-product') && (
+          <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-2xl z-[100] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-5xl rounded-[3.5rem] p-10 md:p-14 overflow-y-auto max-h-[90vh] shadow-2xl animate-fadeIn">
+               <div className="flex justify-between items-center mb-12">
+                 <h2 className="text-3xl font-black uppercase italic tracking-tighter text-slate-900">{modalMode === 'edit-product' ? 'Sync Asset' : 'Global Launch'}</h2>
+                 <button onClick={() => setModalMode('none')} className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-900 hover:bg-orange-600 hover:text-white transition-all shadow-inner">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
+                 </button>
+               </div>
+               
+               <form onSubmit={handleSaveProduct} className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                 <div className="space-y-8">
+                   <div className="group">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1 group-focus-within:text-orange-500">Asset Title</label>
+                      <input required className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500/20 p-5 rounded-2xl font-black text-sm uppercase italic outline-none focus:bg-white transition-all shadow-inner" value={formState.name} onChange={e => setFormState({...formState, name: e.target.value})} placeholder="PRODUCT NAME..." />
+                   </div>
+                   
+                   <div className="grid grid-cols-2 gap-6">
+                     <div>
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Market Price</label>
+                        <input required type="number" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.price} onChange={e => setFormState({...formState, price: e.target.value})} placeholder="0.00" />
+                     </div>
+                     <div>
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Sale Value</label>
+                        <input type="number" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.discount_price} onChange={e => setFormState({...formState, discount_price: e.target.value})} placeholder="OPTIONAL" />
+                     </div>
+                   </div>
+
+                   {/* RATING & REVIEWS CONTROLS */}
+                   <div className="grid grid-cols-2 gap-6 bg-orange-50 p-6 rounded-[2.5rem] border border-orange-100">
+                      <div>
+                        <label className="text-[9px] font-black text-orange-600 uppercase tracking-widest mb-3 block ml-1">Manual Rating (1-5)</label>
+                        <input type="number" step="0.1" max="5" min="0" className="w-full bg-white border-none p-4 rounded-xl font-black text-sm outline-none shadow-sm" value={formState.rating} onChange={e => setFormState({...formState, rating: e.target.value})} placeholder="4.5" />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-black text-orange-600 uppercase tracking-widest mb-3 block ml-1">Review Count</label>
+                        <input type="number" className="w-full bg-white border-none p-4 rounded-xl font-black text-sm outline-none shadow-sm" value={formState.review_count} onChange={e => setFormState({...formState, review_count: e.target.value})} placeholder="100" />
+                      </div>
+                   </div>
+
+                   <div className="group">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Department</label>
+                      <select required className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm uppercase italic outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.category_id} onChange={e => setFormState({...formState, category_id: e.target.value})}>
+                        <option value="">Select Category</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </select>
+                   </div>
+                 </div>
+
+                 <div className="space-y-8">
+                   <div className="group">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Visual Asset URL</label>
+                      <input required type="url" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-bold text-xs outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.image_url} onChange={e => setFormState({...formState, image_url: e.target.value})} placeholder="HTTPS://IMAGE-LINK.PNG" />
+                   </div>
+                   
+                   <div className="group">
+                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Specs (Description)</label>
+                      <textarea rows={6} className="w-full bg-slate-50 border-2 border-transparent p-6 rounded-[2rem] font-medium text-sm outline-none focus:bg-white transition-all shadow-inner" value={formState.description} onChange={e => setFormState({...formState, description: e.target.value})} placeholder="PRODUCT DETAILS..." />
+                   </div>
+
+                   <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Vault Stock</label>
+                        <input required type="number" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm outline-none shadow-inner" value={formState.stock} onChange={e => setFormState({...formState, stock: e.target.value})} placeholder="0" />
+                      </div>
+                      <div className="flex items-end">
+                        <button type="submit" className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl hover:bg-orange-600 transition-all active:scale-95 italic">Authorize Link</button>
+                      </div>
+                   </div>
+                 </div>
+               </form>
+            </div>
+          </div>
+        )}
+
+        {/* CATEGORIES TAB (Full Management) */}
         {activeTab === 'categories' && (
           <div className="max-w-4xl animate-fadeIn">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -375,84 +391,6 @@ const AdminDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* MODAL: PRODUCT */}
-        {(modalMode === 'add-product' || modalMode === 'edit-product') && (
-          <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-2xl z-[100] flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-5xl rounded-[3.5rem] p-10 md:p-14 overflow-y-auto max-h-[90vh] shadow-2xl animate-fadeIn border border-white/20">
-               <div className="flex justify-between items-center mb-12">
-                 <div>
-                   <h2 className="text-3xl font-black uppercase italic tracking-tighter text-slate-900">{modalMode === 'edit-product' ? 'Sync Asset' : 'Global Launch'}</h2>
-                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Configure inventory parameters</p>
-                 </div>
-                 <button onClick={() => setModalMode('none')} className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-900 hover:bg-orange-600 hover:text-white transition-all shadow-inner">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12" /></svg>
-                 </button>
-               </div>
-               
-               <form onSubmit={handleSaveProduct} className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                 <div className="space-y-8">
-                   <div className="group">
-                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1 group-focus-within:text-orange-500">Asset Title</label>
-                      <input required className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500/20 p-5 rounded-2xl font-black text-sm uppercase italic outline-none focus:bg-white transition-all shadow-inner" value={formState.name} onChange={e => setFormState({...formState, name: e.target.value})} placeholder="e.g. ULTRA BOOST 2.0" />
-                   </div>
-                   
-                   <div className="grid grid-cols-2 gap-6">
-                     <div className="group">
-                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Market Price</label>
-                        <input required type="number" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.price} onChange={e => setFormState({...formState, price: e.target.value})} placeholder="0.00" />
-                     </div>
-                     <div className="group">
-                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Sale Value</label>
-                        <input type="number" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.discount_price} onChange={e => setFormState({...formState, discount_price: e.target.value})} placeholder="Optional" />
-                     </div>
-                   </div>
-
-                   <div className="group">
-                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Department</label>
-                      <select required className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm uppercase italic outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.category_id} onChange={e => setFormState({...formState, category_id: e.target.value})}>
-                        <option value="">Select Category</option>
-                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
-                   </div>
-
-                   <div className="flex gap-8 bg-slate-50 p-6 rounded-[2rem] border border-slate-100">
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" checked={formState.is_featured} onChange={e => setFormState({...formState, is_featured: e.target.checked})} className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Featured Asset</span>
-                      </label>
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" checked={formState.is_flash_sale} onChange={e => setFormState({...formState, is_flash_sale: e.target.checked})} className="w-5 h-5 rounded border-slate-300 text-orange-600 focus:ring-orange-500" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">Flash Sale</span>
-                      </label>
-                   </div>
-                 </div>
-
-                 <div className="space-y-8">
-                   <div className="group">
-                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Visual Asset URL</label>
-                      <input required type="url" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-bold text-xs outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.image_url} onChange={e => setFormState({...formState, image_url: e.target.value})} placeholder="https://cloud.storage/asset.png" />
-                   </div>
-                   
-                   <div className="group">
-                      <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Technical Specs (Description)</label>
-                      <textarea rows={6} className="w-full bg-slate-50 border-2 border-transparent p-6 rounded-[2rem] font-medium text-sm focus:ring-0 focus:border-orange-500/20 outline-none focus:bg-white transition-all shadow-inner" value={formState.description} onChange={e => setFormState({...formState, description: e.target.value})} placeholder="Enter detailed specifications..." />
-                   </div>
-
-                   <div className="grid grid-cols-2 gap-4">
-                      <div className="group">
-                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Vault Stock</label>
-                        <input required type="number" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.stock} onChange={e => setFormState({...formState, stock: e.target.value})} placeholder="0" />
-                      </div>
-                      <div className="flex items-end">
-                        <button type="submit" className="w-full bg-orange-600 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] shadow-2xl hover:bg-slate-900 transition-all active:scale-95 italic">Authorize Link</button>
-                      </div>
-                   </div>
-                 </div>
-               </form>
-            </div>
-          </div>
-        )}
-
         {/* MODAL: CATEGORY */}
         {modalMode === 'add-category' && (
           <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
@@ -462,10 +400,7 @@ const AdminDashboard: React.FC = () => {
                  <button onClick={() => setModalMode('none')} className="text-2xl font-black">×</button>
                </div>
                <form onSubmit={handleAddCategory} className="space-y-6">
-                 <div className="group">
-                    <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Dept Name</label>
-                    <input required className="w-full bg-slate-50 border-none p-5 rounded-2xl font-black text-sm uppercase italic outline-none focus:ring-2 focus:ring-orange-500/20" value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="e.g. Premium Footwear" />
-                 </div>
+                 <input required className="w-full bg-slate-50 border-none p-5 rounded-2xl font-black text-sm uppercase italic outline-none focus:ring-2 focus:ring-orange-500/20" value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="DEPT NAME..." />
                  <button type="submit" className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-orange-600 transition-all">Authorize Dept</button>
                </form>
             </div>
