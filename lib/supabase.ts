@@ -22,6 +22,17 @@ export const fetchCategories = async (): Promise<Category[]> => {
   return data || [];
 };
 
+export const addCategory = async (name: string, slug: string) => {
+  const { data, error } = await supabase.from('categories').insert([{ name, slug }]).select();
+  if (error) throw error;
+  return data;
+};
+
+export const deleteCategory = async (id: string) => {
+  const { error } = await supabase.from('categories').delete().eq('id', id);
+  if (error) throw error;
+};
+
 export const fetchUserOrders = async (userId: string): Promise<Order[]> => {
   const { data, error } = await supabase
     .from('orders')
@@ -37,5 +48,13 @@ export const updateProductStock = async (productId: string, newStock: number) =>
     .from('products')
     .update({ stock: newStock })
     .eq('id', productId);
+  if (error) throw error;
+};
+
+export const updateProfile = async (userId: string, updates: Partial<Profile>) => {
+  const { error } = await supabase
+    .from('profiles')
+    .update(updates)
+    .eq('id', userId);
   if (error) throw error;
 };
