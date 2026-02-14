@@ -17,18 +17,27 @@ const MainContent: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const { user, isAdmin, loading } = useAuth();
+  const [productsLoading, setProductsLoading] = useState(true);
+  const { user, isAdmin, loading: authLoading } = useAuth();
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
+    const loadData = async () => {
       try {
         const data = await fetchProducts();
         setProducts(data);
       } catch (err) {
         console.error("Products load error:", err);
+      } finally {
+        setProductsLoading(false);
       }
     };
-    load();
+    loadData();
+
+    // Safety timeout: If auth takes too long, hide splash anyway after 3.5s
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 3500);
 
     const handleHash = () => {
       const hash = window.location.hash.replace('#', '') || 'home';
@@ -36,8 +45,21 @@ const MainContent: React.FC = () => {
     };
     window.addEventListener('hashchange', handleHash);
     handleHash();
-    return () => window.removeEventListener('hashchange', handleHash);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHash);
+      clearTimeout(timer);
+    };
   }, []);
+
+  // Decide when to hide the splash screen
+  useEffect(() => {
+    if (!authLoading) {
+      // Small delay for smooth transition
+      const t = setTimeout(() => setShowSplash(false), 500);
+      return () => clearTimeout(t);
+    }
+  }, [authLoading]);
 
   const navigate = (page: string) => {
     window.location.hash = page;
@@ -49,15 +71,26 @@ const MainContent: React.FC = () => {
     navigate('product');
   };
 
-  if (loading) {
+  if (showSplash && authLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900">
-        <div className="text-center">
-          <div className="text-3xl font-black mb-4 tracking-tighter uppercase italic text-white">Next<span className="text-orange-500">Bazar</span></div>
-          <div className="w-48 h-1 bg-slate-800 rounded-full overflow-hidden mx-auto">
-            <div className="h-full bg-orange-500 animate-pulse w-full"></div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 animate-fadeIn">
+        <div className="text-center relative">
+          <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-orange-500/10 rounded-full blur-[80px]"></div>
+          <div className="text-4xl md:text-5xl font-black mb-6 tracking-tighter uppercase italic text-white relative">
+            Next<span className="text-orange-500">Bazar</span>
           </div>
+          <div className="w-48 h-1 bg-slate-800 rounded-full overflow-hidden mx-auto relative">
+            <div className="h-full bg-orange-500 animate-[shimmer_1.5s_infinite] w-full origin-left"></div>
+          </div>
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-8 animate-pulse italic">Connecting to Secure Gateway...</p>
         </div>
+        <style>{`
+          @keyframes shimmer {
+            0% { transform: scaleX(0); opacity: 0; }
+            50% { transform: scaleX(0.7); opacity: 1; }
+            100% { transform: scaleX(1); opacity: 0; }
+          }
+        `}</style>
       </div>
     );
   }
@@ -80,9 +113,16 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       {currentPage !== 'admin' && <Navbar onNavigate={navigate} currentPage={currentPage} />}
-      <main className="flex-1">{renderPage()}</main>
+      <main className="flex-1">
+        {productsLoading && currentPage === 'home' ? (
+          <div className="max-w-7xl mx-auto px-4 py-20 text-center">
+            <div className="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Syncing Premium Inventory...</p>
+          </div>
+        ) : renderPage()}
+      </main>
       {currentPage !== 'admin' && (
         <footer className="bg-slate-900 text-white py-16 px-6 pb-28 md:pb-16 mt-20">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
