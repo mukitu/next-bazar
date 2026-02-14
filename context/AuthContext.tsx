@@ -28,20 +28,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (uid) {
-        const { data: profile, error } = await supabase
+        // Fast timeout for profile fetch
+        const fetchPromise = supabase
           .from('profiles')
           .select('*')
           .eq('id', uid)
           .single();
+          
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profile sync timeout')), 5000)
+        );
+
+        const result: any = await Promise.race([fetchPromise, timeoutPromise]);
         
-        if (profile) {
-          const profileData = profile as Profile;
+        if (result.data) {
+          const profileData = result.data as Profile;
           setUser(profileData);
           return profileData;
+        } else {
+          // Fallback logic
+          const { data: { user: authUser } } = await supabase.auth.getUser();
+          if (authUser && authUser.id === uid) {
+             const fallbackProfile: Profile = {
+                id: authUser.id,
+                email: authUser.email!,
+                role: 'user',
+                full_name: authUser.user_metadata?.full_name || '',
+                created_at: new Date().toISOString()
+             };
+             setUser(fallbackProfile);
+             return fallbackProfile;
+          }
         }
       }
     } catch (e) {
-      console.warn("Background profile sync failed:", e);
+      console.warn("Auth sync warning:", e);
+    } finally {
+      // CRITICAL: Always ensure loading state is cleared
+      setLoading(false);
     }
     return null;
   }, []);
@@ -52,15 +76,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const initAuth = async () => {
       try {
-        // Quick session check first
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           await refreshProfile(session.user.id);
+        } else {
+          setLoading(false);
         }
       } catch (e) {
         console.error("Auth init error:", e);
-      } finally {
-        // Always stop loading regardless of success/fail
         setLoading(false);
       }
     };
@@ -69,19 +92,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        await refreshProfile(session.user.id);
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+          await refreshProfile(session.user.id);
+        }
       } else {
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, [refreshProfile]);
 
   const signOut = async () => {
+    setLoading(true);
     await supabase.auth.signOut();
     setUser(null);
+    setLoading(false);
   };
 
   const isAdmin = user?.role === 'admin';
