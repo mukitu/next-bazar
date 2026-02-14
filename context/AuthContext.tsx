@@ -13,7 +13,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// প্রমিজ টাইম-আউট ফাংশন
 async function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
   let timeoutId: any;
   const timeoutPromise = new Promise<T>((_, reject) => {
@@ -32,34 +31,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let uid = forceUserId;
       
       if (!uid) {
-        // Fix: Cast sessionRes to any to resolve 'unknown' type error on property 'data'
-        const sessionRes = await withTimeout(supabase.auth.getSession(), 3000).catch(() => ({ data: { session: null } })) as any;
-        uid = sessionRes.data?.session?.user?.id;
+        const { data: { session } } = await supabase.auth.getSession();
+        uid = session?.user?.id;
       }
 
       if (uid) {
-        // প্রোফাইল চেক করার সময় রিট্রাই (Retry) লজিক
-        for (let i = 0; i < 3; i++) {
-          try {
-            // Fix: Cast withTimeout result to any to resolve '{}' type error during destructuring of 'data' and 'error'
-            const { data: profile, error } = (await withTimeout(
-              supabase.from('profiles').select('*').eq('id', uid).maybeSingle(),
-              3000
-            )) as any;
-            
-            if (profile) {
-              const profileData = profile as Profile;
-              setUser(profileData);
-              return profileData;
-            }
-          } catch (err) {
-            console.warn(`Attempt ${i+1} failed to fetch profile:`, err);
-          }
-          await new Promise(r => setTimeout(r, 800));
+        // Fetch fresh data from DB with no caching
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', uid)
+          .single();
+        
+        if (profile) {
+          const profileData = profile as Profile;
+          setUser(profileData);
+          return profileData;
         }
       }
     } catch (e) {
-      console.warn("Auth initialization failed, proceeding as guest.");
+      console.warn("Profile sync failed:", e);
     }
     
     if (!forceUserId) setUser(null);
