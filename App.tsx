@@ -26,18 +26,18 @@ const MainContent: React.FC = () => {
     setProductsLoading(true);
     setLoadError(false);
     
-    // Safety timeout: If fetchProducts takes > 8s, stop loading
+    // Safety timeout: If fetchProducts takes > 5s, stop blocking the UI
     const timeout = setTimeout(() => {
-      if (productsLoading) {
-        setProductsLoading(false);
-        if (products.length === 0) setLoadError(true);
-      }
-    }, 8000);
+      setProductsLoading(false);
+      if (products.length === 0) setLoadError(true);
+    }, 5000);
 
     try {
       const data = await fetchProducts();
-      setProducts(data || []);
-      setLoadError(false);
+      if (data && data.length > 0) {
+        setProducts(data);
+        setLoadError(false);
+      }
     } catch (err) {
       console.error("Critical Load Error:", err);
       setLoadError(true);
@@ -45,12 +45,12 @@ const MainContent: React.FC = () => {
       setProductsLoading(false);
       clearTimeout(timeout);
     }
-  }, [products.length, productsLoading]);
+  }, [products.length]);
 
   useEffect(() => {
     loadInitialData();
 
-    // Safety splash timeout
+    // FORCE clear splash screen after 3 seconds regardless of auth state
     const splashTimer = setTimeout(() => {
       setShowSplash(false);
     }, 3000);
@@ -68,10 +68,10 @@ const MainContent: React.FC = () => {
     };
   }, [loadInitialData]);
 
-  // Sync splash screen with auth
+  // Transition from splash once auth is ready, but limited by the 3s timeout above
   useEffect(() => {
     if (!authLoading) {
-      const t = setTimeout(() => setShowSplash(false), 300);
+      const t = setTimeout(() => setShowSplash(false), 200);
       return () => clearTimeout(t);
     }
   }, [authLoading]);
@@ -86,6 +86,7 @@ const MainContent: React.FC = () => {
     navigate('product');
   };
 
+  // Only show splash if BOTH are true AND we haven't hit the safety timeout
   if (showSplash && authLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 animate-fadeIn">
@@ -97,7 +98,7 @@ const MainContent: React.FC = () => {
           <div className="w-48 h-1 bg-slate-800 rounded-full overflow-hidden mx-auto relative">
             <div className="h-full bg-orange-500 animate-[shimmer_1.5s_infinite] w-full origin-left"></div>
           </div>
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-8 animate-pulse italic">Connecting to Secure Gateway...</p>
+          <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em] mt-8 animate-pulse italic">Securing Neural Link...</p>
         </div>
         <style>{`
           @keyframes shimmer {
@@ -116,21 +117,20 @@ const MainContent: React.FC = () => {
         if (productsLoading && products.length === 0) {
           return (
             <div className="max-w-7xl mx-auto px-4 py-32 text-center animate-fadeIn">
-              <div className="w-12 h-12 border-[3px] border-orange-500 border-t-transparent rounded-full mx-auto mb-6 animate-spin"></div>
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">Syncing Premium Inventory...</h3>
-              <p className="text-[9px] text-slate-300 mt-2 font-bold uppercase tracking-widest">Optimizing database response time</p>
+              <div className="w-10 h-10 border-[3px] border-orange-500 border-t-transparent rounded-full mx-auto mb-6 animate-spin"></div>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Syncing Master Cache...</h3>
             </div>
           );
         }
         if (loadError && products.length === 0) {
           return (
             <div className="max-w-7xl mx-auto px-4 py-32 text-center animate-fadeIn">
-              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-8">
-                <svg className="w-10 h-10 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg className="w-8 h-8 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
               </div>
-              <h3 className="text-xl font-black text-slate-900 uppercase italic tracking-tighter">Gateway Timeout</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 mb-10">Poor network connection detected</p>
-              <button onClick={() => window.location.reload()} className="bg-slate-900 text-white px-12 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-orange-600 transition-all">Retry Connection</button>
+              <h3 className="text-lg font-black text-slate-900 uppercase italic tracking-tighter">Sync Interrupted</h3>
+              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2 mb-10">Database handshake failed</p>
+              <button onClick={() => window.location.reload()} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-[9px] uppercase tracking-widest shadow-xl hover:bg-orange-600 transition-all">Emergency Reboot</button>
             </div>
           );
         }
