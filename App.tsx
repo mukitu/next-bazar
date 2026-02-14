@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
@@ -18,26 +18,42 @@ const MainContent: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const { user, isAdmin, loading: authLoading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const data = await fetchProducts();
-        setProducts(data);
-      } catch (err) {
-        console.error("Products load error:", err);
-      } finally {
+  const loadInitialData = useCallback(async () => {
+    setProductsLoading(true);
+    setLoadError(false);
+    
+    // Safety timeout: If fetchProducts takes > 8s, stop loading
+    const timeout = setTimeout(() => {
+      if (productsLoading) {
         setProductsLoading(false);
+        if (products.length === 0) setLoadError(true);
       }
-    };
-    loadData();
+    }, 8000);
 
-    // Safety timeout: If auth takes too long, hide splash anyway after 3.5s
-    const timer = setTimeout(() => {
+    try {
+      const data = await fetchProducts();
+      setProducts(data || []);
+      setLoadError(false);
+    } catch (err) {
+      console.error("Critical Load Error:", err);
+      setLoadError(true);
+    } finally {
+      setProductsLoading(false);
+      clearTimeout(timeout);
+    }
+  }, [products.length, productsLoading]);
+
+  useEffect(() => {
+    loadInitialData();
+
+    // Safety splash timeout
+    const splashTimer = setTimeout(() => {
       setShowSplash(false);
-    }, 3500);
+    }, 3000);
 
     const handleHash = () => {
       const hash = window.location.hash.replace('#', '') || 'home';
@@ -48,15 +64,14 @@ const MainContent: React.FC = () => {
     
     return () => {
       window.removeEventListener('hashchange', handleHash);
-      clearTimeout(timer);
+      clearTimeout(splashTimer);
     };
-  }, []);
+  }, [loadInitialData]);
 
-  // Decide when to hide the splash screen
+  // Sync splash screen with auth
   useEffect(() => {
     if (!authLoading) {
-      // Small delay for smooth transition
-      const t = setTimeout(() => setShowSplash(false), 500);
+      const t = setTimeout(() => setShowSplash(false), 300);
       return () => clearTimeout(t);
     }
   }, [authLoading]);
@@ -97,7 +112,29 @@ const MainContent: React.FC = () => {
 
   const renderPage = () => {
     switch (currentPage) {
-      case 'home': return <HomePage products={products} onProductClick={onProductClick} />;
+      case 'home': 
+        if (productsLoading && products.length === 0) {
+          return (
+            <div className="max-w-7xl mx-auto px-4 py-32 text-center animate-fadeIn">
+              <div className="w-12 h-12 border-[3px] border-orange-500 border-t-transparent rounded-full mx-auto mb-6 animate-spin"></div>
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em]">Syncing Premium Inventory...</h3>
+              <p className="text-[9px] text-slate-300 mt-2 font-bold uppercase tracking-widest">Optimizing database response time</p>
+            </div>
+          );
+        }
+        if (loadError && products.length === 0) {
+          return (
+            <div className="max-w-7xl mx-auto px-4 py-32 text-center animate-fadeIn">
+              <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg className="w-10 h-10 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              </div>
+              <h3 className="text-xl font-black text-slate-900 uppercase italic tracking-tighter">Gateway Timeout</h3>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2 mb-10">Poor network connection detected</p>
+              <button onClick={() => window.location.reload()} className="bg-slate-900 text-white px-12 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-orange-600 transition-all">Retry Connection</button>
+            </div>
+          );
+        }
+        return <HomePage products={products} onProductClick={onProductClick} />;
       case 'product': return selectedProduct ? <ProductPage product={selectedProduct} /> : <HomePage products={products} onProductClick={onProductClick} />;
       case 'cart': return <CartPage onCheckout={() => navigate('checkout')} onShop={() => navigate('home')} />;
       case 'checkout': return <CheckoutPage onComplete={() => navigate('user-dashboard')} />;
@@ -116,12 +153,7 @@ const MainContent: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       {currentPage !== 'admin' && <Navbar onNavigate={navigate} currentPage={currentPage} />}
       <main className="flex-1">
-        {productsLoading && currentPage === 'home' ? (
-          <div className="max-w-7xl mx-auto px-4 py-20 text-center">
-            <div className="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Syncing Premium Inventory...</p>
-          </div>
-        ) : renderPage()}
+        {renderPage()}
       </main>
       {currentPage !== 'admin' && (
         <footer className="bg-slate-900 text-white py-16 px-6 pb-28 md:pb-16 mt-20">
