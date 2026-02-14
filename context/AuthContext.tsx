@@ -13,14 +13,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-async function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
-  let timeoutId: any;
-  const timeoutPromise = new Promise<T>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error('Database Timeout')), ms);
-  });
-  return Promise.race([Promise.resolve(promise), timeoutPromise]).finally(() => clearTimeout(timeoutId));
-}
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +28,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (uid) {
-        // Fetch fresh data from DB with no caching
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('*')
@@ -50,10 +41,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     } catch (e) {
-      console.warn("Profile sync failed:", e);
+      console.warn("Background profile sync failed:", e);
     }
-    
-    if (!forceUserId) setUser(null);
     return null;
   }, []);
 
@@ -63,8 +52,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const initAuth = async () => {
       try {
-        await refreshProfile();
+        // Quick session check first
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          await refreshProfile(session.user.id);
+        }
+      } catch (e) {
+        console.error("Auth init error:", e);
       } finally {
+        // Always stop loading regardless of success/fail
         setLoading(false);
       }
     };
@@ -76,8 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await refreshProfile(session.user.id);
       } else {
         setUser(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
