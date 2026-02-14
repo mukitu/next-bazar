@@ -52,9 +52,13 @@ export const updateProductStock = async (productId: string, newStock: number) =>
 };
 
 export const updateProfile = async (userId: string, updates: Partial<Profile>) => {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
     .update(updates)
-    .eq('id', userId);
+    .eq('id', userId)
+    .select()
+    .single();
+  
   if (error) throw error;
+  return data as Profile;
 };
