@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { fetchUserOrders, updateProfile } from '../lib/supabase';
@@ -20,26 +21,29 @@ const UserDashboard: React.FC = () => {
   const [updating, setUpdating] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+  // Initial Data Load
   useEffect(() => {
     if (user) {
-      const loadData = async () => {
+      const loadOrders = async () => {
         try {
           const data = await fetchUserOrders(user.id);
           setOrders(data || []);
-          setProfileForm({
-            full_name: user.full_name || '',
-            phone: user.phone || '',
-            address: user.address || ''
-          });
         } catch (err) {
-          console.error("Dashboard Load Error:", err);
+          console.error("Orders Load Error:", err);
         } finally {
           setLoading(false);
         }
       };
-      loadData();
+      loadOrders();
+
+      // Set form data only once or when user is first loaded to avoid overwriting during input
+      setProfileForm({
+        full_name: user.full_name || '',
+        phone: user.phone || '',
+        address: user.address || ''
+      });
     }
-  }, [user]);
+  }, [user?.id]); // Only re-run if the user ID changes, not the whole user object
 
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,8 +51,19 @@ const UserDashboard: React.FC = () => {
     setUpdating(true);
     setMessage(null);
     try {
-      await updateProfile(user.id, profileForm);
+      // 1. Update in Database
+      const updatedProfile = await updateProfile(user.id, profileForm);
+      
+      // 2. Refresh Global Context
       await refreshProfile(user.id);
+      
+      // 3. Keep local form in sync
+      setProfileForm({
+        full_name: updatedProfile.full_name || '',
+        phone: updatedProfile.phone || '',
+        address: updatedProfile.address || ''
+      });
+
       setMessage({ type: 'success', text: 'Identity sync successful!' });
       setTimeout(() => setMessage(null), 3000);
     } catch (err: any) {
