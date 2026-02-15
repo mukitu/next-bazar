@@ -167,7 +167,7 @@ const MainContent: React.FC = () => {
               <span onClick={() => navigate('user-dashboard')} className="hover:text-orange-500 cursor-pointer transition">Track My Orders</span>
               <span className="hover:text-orange-500 cursor-pointer transition">Privacy Policy</span>
             </div>
-            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">© 2024 NEXTBAZAR.CO</p>
+            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">© 2026 NEXTBAZAR</p>
           </div>
         </footer>
       )}
