@@ -141,10 +141,10 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
           </div>
 
           <div className="mt-16 border-t border-slate-100 pt-10">
-            <h4 className="text-xl font-black text-slate-900 mb-6 uppercase italic tracking-tighter">Technical <span className="text-orange-500">Specifications</span></h4>
-            <div className="prose prose-slate max-w-none">
-              <p className="text-slate-500 leading-relaxed font-medium whitespace-pre-wrap">{product.description}</p>
-            </div>
+            <h4 className="text-xl font-black text-slate-900 mb-6 uppercase italic tracking-tighter">Product <span className="text-orange-500">Description</span></h4>
+            <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed text-sm"
+              dangerouslySetInnerHTML={{ __html: product.description || 'No description available.' }}
+            />
           </div>
         </div>
       </div>

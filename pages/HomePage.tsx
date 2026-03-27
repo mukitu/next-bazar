@@ -69,34 +69,117 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick }) => {
         </div>
       </div>
 
-      {/* Hero Slider */}
+      {/* Hero Slider — Professional Split Layout */}
       {featuredProducts.length > 0 && (
-        <section className="relative h-[280px] md:h-[550px] rounded-[2.5rem] md:rounded-[3.5rem] overflow-hidden mb-16 shadow-2xl group">
-          <div className="absolute inset-0 flex transition-transform duration-1000" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+        <section className="relative overflow-hidden mb-10 md:mb-16">
+          {/* Slide Track */}
+          <div
+            className="flex transition-transform duration-700 ease-in-out"
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          >
             {featuredProducts.map((p) => (
-              <div key={p.id} className="min-w-full h-full relative cursor-pointer" onClick={() => onProductClick(p)}>
-                <img src={p.images[0]} className="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-[3000ms]" alt="" />
-                <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-slate-900/90 via-slate-900/40 to-transparent p-10 md:p-24 flex flex-col justify-end md:justify-center">
-                  <div className="bg-orange-600 w-max px-4 py-1.5 rounded-full text-[9px] md:text-[11px] font-black uppercase tracking-[0.2em] text-white mb-6 animate-pulse shadow-lg shadow-orange-900/40">Hot Featured</div>
-                  <h2 className="text-3xl md:text-7xl font-black text-white uppercase italic tracking-tighter mb-4 md:mb-8 leading-tight max-w-2xl drop-shadow-2xl">
-                    {p.name.split(' ').slice(0, 2).join(' ')}<br />{p.name.split(' ').slice(2).join(' ')}
-                  </h2>
-                  <div className="flex items-center gap-6 mb-8 md:mb-12">
-                    <span className="text-2xl md:text-5xl font-black text-orange-500 drop-shadow-md">{CURRENCY_SYMBOL}{p.discount_price || p.price}</span>
-                    {p.discount_price && <span className="text-lg md:text-2xl line-through text-slate-400 font-bold">{CURRENCY_SYMBOL}{p.price}</span>}
+              <div
+                key={p.id}
+                className="min-w-full cursor-pointer"
+                onClick={() => onProductClick(p)}
+              >
+                <div className="relative flex flex-col md:flex-row items-stretch rounded-2xl md:rounded-3xl overflow-hidden shadow-xl bg-gradient-to-br from-green-900 via-green-800 to-green-700 min-h-[220px] md:min-h-[420px]">
+                  {/* Left — Text Panel */}
+                  <div className="flex-1 flex flex-col justify-center px-8 py-10 md:px-16 md:py-14 z-10 relative">
+                    {/* Decorative circles */}
+                    <div className="absolute -top-10 -left-10 w-48 h-48 bg-white/5 rounded-full"></div>
+                    <div className="absolute bottom-0 left-20 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl"></div>
+
+                    {/* Badge */}
+                    <div className="flex items-center gap-2 mb-5">
+                      <span className="bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg">
+                        ⚡ বিশেষ অফার
+                      </span>
+                      {p.is_flash_sale && (
+                        <span className="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full animate-pulse">
+                          Flash Sale
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Product Name */}
+                    <h2 className="text-2xl md:text-5xl font-black text-white leading-tight mb-3 md:mb-5 max-w-lg drop-shadow">
+                      {p.name.length > 50 ? p.name.substring(0, 50) + '...' : p.name}
+                    </h2>
+
+                    {/* Price */}
+                    <div className="flex items-center gap-4 mb-6 md:mb-8">
+                      <span className="text-3xl md:text-5xl font-black text-orange-400">
+                        {CURRENCY_SYMBOL}{p.discount_price || p.price}
+                      </span>
+                      {p.discount_price && (
+                        <div className="flex flex-col">
+                          <span className="text-base md:text-xl line-through text-white/40 font-bold">{CURRENCY_SYMBOL}{p.price}</span>
+                          <span className="text-[10px] bg-red-500 text-white px-2 py-0.5 rounded font-black uppercase tracking-wide">
+                            {Math.round(((p.price - p.discount_price) / p.price) * 100)}% OFF
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* CTA Button */}
+                    <div className="flex gap-3">
+                      <button className="bg-white text-green-800 px-8 py-3 rounded-xl font-black text-sm uppercase tracking-wider hover:bg-orange-500 hover:text-white transition-all shadow-lg active:scale-95">
+                        এখনই কিনুন
+                      </button>
+                      <button className="border-2 border-white/30 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-white/10 transition">
+                        বিস্তারিত দেখুন
+                      </button>
+                    </div>
                   </div>
-                  <button className="bg-white text-slate-900 px-10 md:px-14 py-4 md:py-5 rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-[0.2em] w-max hover:bg-orange-600 hover:text-white transition-all transform hover:scale-105 active:scale-95 shadow-2xl">VIEW DETAILS</button>
+
+                  {/* Right — Product Image */}
+                  <div className="w-full md:w-[42%] flex-shrink-0 relative min-h-[200px] md:min-h-0 overflow-hidden">
+                    <img
+                      src={p.images[0]}
+                      alt={p.name}
+                      className="w-full h-full object-cover md:object-contain object-center transform hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-800/30 md:from-green-800 via-transparent to-transparent pointer-events-none"></div>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-3 z-10">
-            {featuredProducts.map((_, idx) => (
-              <button key={idx} onClick={(e) => { e.stopPropagation(); setCurrentSlide(idx); }} className={`h-1.5 transition-all rounded-full ${idx === currentSlide ? 'w-12 bg-orange-600 shadow-lg shadow-orange-500/50' : 'w-3 bg-white/40 hover:bg-white/60'}`} />
-            ))}
-          </div>
+
+          {/* Navigation Dots */}
+          {featuredProducts.length > 1 && (
+            <div className="flex justify-center gap-2 mt-4">
+              {featuredProducts.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${idx === currentSlide ? 'w-8 bg-green-700' : 'w-2 bg-gray-300 hover:bg-gray-400'}`}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Arrow Buttons */}
+          {featuredProducts.length > 1 && (
+            <>
+              <button
+                onClick={() => setCurrentSlide(prev => (prev - 1 + featuredProducts.length) % featuredProducts.length)}
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition z-10"
+              >
+                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <button
+                onClick={() => setCurrentSlide(prev => (prev + 1) % featuredProducts.length)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition z-10"
+              >
+                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </>
+          )}
         </section>
       )}
+
 
       {/* Category Quick-Jump Bar (only when not searching) */}
       {!isSearching && sortedCategories.length > 0 && (
