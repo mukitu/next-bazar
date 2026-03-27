@@ -67,20 +67,33 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
           )}
         </div>
 
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            addToCart(product, 1);
-          }}
-          disabled={product.stock <= 0}
-          className={`w-full py-2.5 rounded-xl text-[9px] font-black transition-all active:scale-95 uppercase tracking-widest ${
-            product.stock > 0 
-            ? 'bg-slate-900 text-white hover:bg-orange-600 shadow-md shadow-slate-100' 
-            : 'bg-slate-50 text-slate-300 cursor-not-allowed'
-          }`}
-        >
-          {product.stock > 0 ? 'Add To Cart' : 'Out Of Stock'}
-        </button>
+        {product.stock > 0 ? (
+          <div className="flex gap-2 w-full mt-auto">
+             <button 
+               onClick={(e) => { e.stopPropagation(); addToCart(product, 1); }}
+               className="flex-1 py-2.5 rounded-xl text-[9px] font-black transition-all active:scale-95 uppercase tracking-widest bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200"
+             >
+               Add To Cart
+             </button>
+             <button 
+               onClick={(e) => { 
+                 e.stopPropagation(); 
+                 addToCart(product, 1);
+                 window.location.hash = 'checkout';
+               }}
+               className="flex-1 py-2.5 rounded-xl text-[9px] font-black transition-all active:scale-95 uppercase tracking-widest bg-slate-900 text-white hover:bg-orange-600 shadow-md shadow-slate-100"
+             >
+               Buy Now
+             </button>
+          </div>
+        ) : (
+          <button 
+            disabled
+            className="w-full mt-auto py-2.5 rounded-xl text-[9px] font-black transition-all uppercase tracking-widest bg-slate-50 text-slate-300 cursor-not-allowed"
+          >
+            Out Of Stock
+          </button>
+        )}
       </div>
     </div>
   );

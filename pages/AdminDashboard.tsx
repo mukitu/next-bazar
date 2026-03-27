@@ -133,15 +133,16 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleBulkFetchDropUpSeller = async () => {
-    const confirm = window.confirm("Do you want to fetch and import ALL products from DropUPSeller API? (This runs in bulk)");
+    const confirm = window.confirm("Do you want to fetch and import ALL products & categories from DropUPSeller API? (This may take a minute)");
     if (!confirm) return;
   
+    setLoading(true);
     try {
       const apiKey = "MLFHFe8JDWNNThvJxL4heD8RD";
       const apiSecret = "HT5zuPmg9bBqI5BKN2kmYvr4Qvl7YIi3EyW7SvtfNabMz";
       
-      // Based on API Docs: GET https://dropupseller.com/api/dropshop/products
-      const targetUrl = "https://dropupseller.com/api/dropshop/products?per_page=50"; 
+      // Fetch 100 products at once (adjustable)
+      const targetUrl = "https://dropupseller.com/api/dropshop/products?per_page=100";
   
       const res = await fetch(targetUrl, {
         method: 'GET',
@@ -159,10 +160,40 @@ const AdminDashboard: React.FC = () => {
   
       if (!Array.isArray(items)) throw new Error("Invalid JSON items structure.");
   
-      let count = 0;
+      let prodCount = 0;
+      let catCount = 0;
+      const existingCategories = [...categories];
+
       for (const item of items) {
         if (!item.name && !item.title) continue;
-        const slugStr = `${(item.name || item.title).toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}-${count}`;
+
+        let finalCategoryId = null;
+
+        // Try to handle categories attached to the product
+        const apiCategories = item.categories || [];
+        if (apiCategories.length > 0) {
+            const apiCatName = apiCategories[0].name;
+            const existingCat = existingCategories.find(c => c.name.toLowerCase() === apiCatName.toLowerCase());
+            
+            if (existingCat) {
+                finalCategoryId = existingCat.id;
+            } else {
+                // Category doesn't exist, so create it first
+                const catSlug = apiCatName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                const catRes = await supabase.from('categories').insert({ name: apiCatName, slug: catSlug }).select().single();
+                
+                if (catRes.data) {
+                    finalCategoryId = catRes.data.id;
+                    existingCategories.push(catRes.data);
+                    catCount++;
+                }
+            }
+        } else {
+            // Fallback to the first existing category if none supplied
+            finalCategoryId = existingCategories.length > 0 ? existingCategories[0].id : null;
+        }
+
+        const slugStr = `${(item.name || item.title).toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}-${prodCount}`;
         
         const payload = {
           name: item.name || item.title,
@@ -170,9 +201,9 @@ const AdminDashboard: React.FC = () => {
           price: parseFloat(item.base_price || item.price || 0),
           discount_price: parseFloat(item.suggested_price || item.discount_price) || null,
           stock: parseInt(item.quantity || item.stock || 150),
-          category_id: categories.length > 0 ? categories[0].id : null, 
+          category_id: finalCategoryId, 
           description: item.description || item.details || "Imported Bulk Item",
-          images: [item.main_image || item.image || (item.images && item.images[0]?.image) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800'],
+          images: [item.main_image || item.image || (item.images && item.images[0]?.image) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b'],
           is_featured: false,
           is_flash_sale: false,
           rating: 5,
@@ -181,14 +212,16 @@ const AdminDashboard: React.FC = () => {
         };
         
         const { error } = await supabase.from('products').insert(payload);
-        if (!error) count++;
+        if (!error) prodCount++;
       }
   
-      alert(`Bulk Sync Completed! Successfully imported ${count} items.`);
+      alert(`Bulk Sync Completed!\nSuccessfully imported ${prodCount} products and created ${catCount} new categories.`);
       loadData();
   
     } catch (err: any) {
       alert("API Connection Error: " + err.message + "\n\nদুঃখিত! CORS ব্লক থাকতে পারে বা আপনার API credentials ভুল হতে পারে।");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -213,65 +246,7 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  const handleFetchDropUpSeller = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!dropUrl) return;
-    
-    try {
-      const apiKey = "MLFHFe8JDWNNThvJxL4heD8RD";
-      const apiSecret = "HT5zuPmg9bBqI5BKN2kmYvr4Qvl7YIi3EyW7SvtfNabMz";
 
-      // Parse ID from URL in case user pasted the frontend URL: https://dropupseller.com/product/3/...
-      let productId = dropUrl.trim();
-      if (productId.includes('/product/')) {
-        const parts = productId.split('/product/');
-        if (parts[1]) {
-           productId = parts[1].split('/')[0];
-        }
-      }
-
-      // Based on API Docs: GET https://dropupseller.com/api/dropshop/products/{id}
-      const targetApiUrl = `https://dropupseller.com/api/dropshop/products/${productId}`;
-
-      const res = await fetch(targetApiUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
-          'X-API-Secret': apiSecret
-        }
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch API. Status Code: ${res.status}`);
-      }
-
-      const responseBody = await res.json();
-      const data = responseBody.data || responseBody;
-      
-      alert("API Connection Successful!\nProduct data loaded into form for editing.");
-      
-      setFormState({
-         name: data.name || data.title || 'Imported DropUPSeller Item',
-         price: data.base_price?.toString() || data.price?.toString() || '0',
-         discount_price: data.suggested_price?.toString() || data.sale_price?.toString() || '',
-         stock: data.quantity?.toString() || data.stock?.toString() || '150',
-         category_id: categories.length > 0 ? categories[0].id : '',
-         description: data.description || data.details || 'Product imported from DropUpSeller API',
-         image_url: data.main_image || data.image || (data.images && data.images[0]?.image) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b',
-         is_featured: false,
-         is_flash_sale: false,
-         rating: '5',
-         review_count: '0'
-      });
-      
-    } catch (err: any) {
-      alert("API Error / CORS Issue: " + err.message + "\n\nদুঃখিত, ব্রাউজার থেকে সরাসরি ব্লক করা হতে পারে (CORS) অথবা প্রোডাক্ট আইডি ভুল।");
-    }
-
-    setDropUrl('');
-    setModalMode('add-product');
-  };
 
   const startEditProduct = (p: Product) => {
     setEditingProduct(p);
@@ -345,8 +320,7 @@ const AdminDashboard: React.FC = () => {
           <div className="flex gap-4">
             {activeTab === 'products' && (
               <>
-                <button onClick={handleBulkFetchDropUpSeller} className="bg-slate-900 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 shadow-sm transition-all border border-slate-700">Bulk API Sync</button>
-                <button onClick={() => setModalMode('dropupseller')} className="bg-orange-100 text-orange-600 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-200 shadow-sm transition-all">Import DropUPSeller</button>
+                <button onClick={handleBulkFetchDropUpSeller} className="bg-slate-900 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 shadow-sm transition-all border border-slate-700">Sync Inventory (API)</button>
                 <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-2xl">
                    <input type="number" placeholder="Bulk % Increase" className="w-32 bg-white px-3 py-2 rounded-xl text-xs font-black outline-none border border-slate-200" value={bulkPercentage} onChange={e => setBulkPercentage(e.target.value)} />
                    <button onClick={handleBulkPriceIncrease} className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all">Apply</button>
@@ -531,22 +505,6 @@ const AdminDashboard: React.FC = () => {
                       </div>
                    </div>
                  </div>
-               </form>
-            </div>
-          </div>
-        )}
-
-        {/* MODAL: DROPUPSeller IMPORT */}
-        {modalMode === 'dropupseller' && (
-          <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-fadeIn">
-               <div className="flex justify-between items-center mb-10">
-                 <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900">Import from <span className="text-orange-500">DropUPSeller</span></h2>
-                 <button onClick={() => setModalMode('none')} className="text-2xl font-black">×</button>
-               </div>
-               <form onSubmit={handleFetchDropUpSeller} className="space-y-6">
-                 <input required type="url" className="w-full bg-slate-50 border-none p-5 rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-orange-500/20" value={dropUrl} onChange={e => setDropUrl(e.target.value)} placeholder="Paste DropUPSeller Product URL..." />
-                 <button type="submit" className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-orange-600 transition-all">Fetch Product Data</button>
                </form>
             </div>
           </div>
