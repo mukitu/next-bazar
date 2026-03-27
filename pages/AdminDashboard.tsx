@@ -139,24 +139,23 @@ const AdminDashboard: React.FC = () => {
     try {
       const apiKey = "MLFHFe8JDWNNThvJxL4heD8RD";
       const apiSecret = "HT5zuPmg9bBqI5BKN2kmYvr4Qvl7YIi3EyW7SvtfNabMz";
-      // This is a generic endpoint assumption. Adjust if they provide the exact doc.
-      const targetUrl = "https://api.dropupseller.com/v1/products"; 
+      
+      // Based on API Docs: GET https://dropupseller.com/api/dropshop/products
+      const targetUrl = "https://dropupseller.com/api/dropshop/products?per_page=50"; 
   
       const res = await fetch(targetUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'X-API-Secret': apiSecret,
-          'API-Key': apiKey,
-          'API-Secret': apiSecret
+          'X-API-Key': apiKey,
+          'X-API-Secret': apiSecret
         }
       });
   
       if (!res.ok) throw new Error(`Status: ${res.status}`);
   
-      const data = await res.json();
-      const items = Array.isArray(data) ? data : data.data || data.products;
+      const responseBody = await res.json();
+      const items = Array.isArray(responseBody) ? responseBody : responseBody.data;
   
       if (!Array.isArray(items)) throw new Error("Invalid JSON items structure.");
   
@@ -168,17 +167,17 @@ const AdminDashboard: React.FC = () => {
         const payload = {
           name: item.name || item.title,
           slug: slugStr,
-          price: parseFloat(item.price || item.regular_price || 0),
-          discount_price: parseFloat(item.sale_price || item.discount_price) || null,
-          stock: parseInt(item.stock || item.quantity || 150),
+          price: parseFloat(item.base_price || item.price || 0),
+          discount_price: parseFloat(item.suggested_price || item.discount_price) || null,
+          stock: parseInt(item.quantity || item.stock || 150),
           category_id: categories.length > 0 ? categories[0].id : null, 
           description: item.description || item.details || "Imported Bulk Item",
-          images: [item.image || item.thumbnail || (item.images && item.images[0]) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800'],
+          images: [item.main_image || item.image || (item.images && item.images[0]?.image) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800'],
           is_featured: false,
           is_flash_sale: false,
           rating: 5,
           review_count: 0,
-          sku: 'DP-B-' + Math.random().toString(36).substr(2, 7).toUpperCase()
+          sku: item.sku || ('DP-B-' + Math.random().toString(36).substr(2, 7).toUpperCase())
         };
         
         const { error } = await supabase.from('products').insert(payload);
@@ -189,7 +188,7 @@ const AdminDashboard: React.FC = () => {
       loadData();
   
     } catch (err: any) {
-      alert("API Connection Error: " + err.message + "\n\nদুঃখিত! সঠিকভাবে API Endpoint URL না পাওয়ায় এবং CORS ব্লক থাকার কারণে ডাটা ফেচ করা যাচ্ছে না। দয়া করে DropUpSeller এর সাপোর্ট থেকে সঠিক 'Product Fetch API Base URL' সংগ্রহ করে দিন।");
+      alert("API Connection Error: " + err.message + "\n\nদুঃখিত! CORS ব্লক থাকতে পারে বা আপনার API credentials ভুল হতে পারে।");
     }
   };
 
@@ -219,23 +218,27 @@ const AdminDashboard: React.FC = () => {
     if (!dropUrl) return;
     
     try {
-      // Configuration based on provided credentials
       const apiKey = "MLFHFe8JDWNNThvJxL4heD8RD";
       const apiSecret = "HT5zuPmg9bBqI5BKN2kmYvr4Qvl7YIi3EyW7SvtfNabMz";
 
-      // If they provided a raw dropupseller website link, we could need to send it to an official API URL endpoint.
-      // E.g., const targetUrl = `https://api.dropupseller.com/v1/products/import?url=${encodeURIComponent(dropUrl)}`;
-      // Assuming dropUrl could be the direct API endpoint or we attempt a direct fetch.
-      let targetApiUrl = dropUrl;
+      // Parse ID from URL in case user pasted the frontend URL: https://dropupseller.com/product/3/...
+      let productId = dropUrl.trim();
+      if (productId.includes('/product/')) {
+        const parts = productId.split('/product/');
+        if (parts[1]) {
+           productId = parts[1].split('/')[0];
+        }
+      }
+
+      // Based on API Docs: GET https://dropupseller.com/api/dropshop/products/{id}
+      const targetApiUrl = `https://dropupseller.com/api/dropshop/products/${productId}`;
 
       const res = await fetch(targetApiUrl, {
-        method: 'GET', // Switch to POST if their doc requires it
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'X-API-Secret': apiSecret,
-          'API-Key': apiKey,
-          'API-Secret': apiSecret
+          'X-API-Key': apiKey,
+          'X-API-Secret': apiSecret
         }
       });
 
@@ -243,18 +246,19 @@ const AdminDashboard: React.FC = () => {
         throw new Error(`Failed to fetch API. Status Code: ${res.status}`);
       }
 
-      const data = await res.json();
+      const responseBody = await res.json();
+      const data = responseBody.data || responseBody;
       
-      alert("API connection successfully established with DropUPSeller.\nProduct data imported for customization!");
+      alert("API Connection Successful!\nProduct data loaded into form for editing.");
       
       setFormState({
-         name: data.name || data.title || 'Imported Fashion Item',
-         price: data.price?.toString() || data.regular_price?.toString() || '0',
-         discount_price: data.sale_price?.toString() || data.discount_price?.toString() || '',
-         stock: data.stock?.toString() || data.quantity?.toString() || '150',
+         name: data.name || data.title || 'Imported DropUPSeller Item',
+         price: data.base_price?.toString() || data.price?.toString() || '0',
+         discount_price: data.suggested_price?.toString() || data.sale_price?.toString() || '',
+         stock: data.quantity?.toString() || data.stock?.toString() || '150',
          category_id: categories.length > 0 ? categories[0].id : '',
-         description: data.description || data.details || 'Premium quality product imported seamlessly from dropupseller API. Original URL: ' + dropUrl,
-         image_url: data.image || data.images?.[0] || data.thumbnail || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
+         description: data.description || data.details || 'Product imported from DropUpSeller API',
+         image_url: data.main_image || data.image || (data.images && data.images[0]?.image) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b',
          is_featured: false,
          is_flash_sale: false,
          rating: '5',
@@ -262,7 +266,7 @@ const AdminDashboard: React.FC = () => {
       });
       
     } catch (err: any) {
-      alert("API Error / CORS Issue: " + err.message + "\n\nদুঃখিত, সঠিক API Link ছাড়া সরাসরি ডাটা ইমপোর্ট করা সম্ভব হচ্ছে না।");
+      alert("API Error / CORS Issue: " + err.message + "\n\nদুঃখিত, ব্রাউজার থেকে সরাসরি ব্লক করা হতে পারে (CORS) অথবা প্রোডাক্ট আইডি ভুল।");
     }
 
     setDropUrl('');
