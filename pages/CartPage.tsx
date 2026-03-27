@@ -16,10 +16,10 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
         <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
           <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
         </div>
-        <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-2 italic">Empty Cart</h2>
-        <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-8">Your bag is as light as air.</p>
+        <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tighter mb-2 italic">খালি কার্ট</h2>
+        <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mb-8">আপনার কার্টটি বর্তমানে খালি রয়েছে।</p>
         <button onClick={onShop} className="bg-slate-900 text-white px-12 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-600 transition shadow-xl active:scale-95">
-          START SHOPPING
+          কেনাকাটা শুরু করুন
         </button>
       </div>
     );
@@ -27,7 +27,7 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fadeIn">
-      <h1 className="text-4xl font-black mb-12 tracking-tighter uppercase italic">My <span className="text-orange-500">Cart</span></h1>
+      <h1 className="text-4xl font-black mb-12 tracking-tighter uppercase italic">আমার <span className="text-orange-500">কার্ট (Bag)</span></h1>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-6">
@@ -54,21 +54,21 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
 
         <div className="lg:col-span-1">
           <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl sticky top-24">
-            <h2 className="text-xl font-black mb-8 uppercase tracking-tighter italic">Order <span className="text-orange-500">Summary</span></h2>
+            <h2 className="text-xl font-black mb-8 uppercase tracking-tighter italic">অর্ডার <span className="text-orange-500">সংক্ষিপ্ত (Summary)</span></h2>
             
             <div className="space-y-4 mb-10 text-[10px] font-black uppercase tracking-widest">
               <div className="flex justify-between text-slate-400">
-                <span>Items Subtotal</span>
+                <span>পণ্যের উপমোট</span>
                 <span className="text-slate-900">{CURRENCY_SYMBOL}{subtotal}</span>
               </div>
-              <p className="text-[9px] text-slate-400 font-bold uppercase mt-4">* Shipping & other charges calculated at checkout</p>
+              <p className="text-[9px] text-slate-400 font-bold uppercase mt-4">* শিপিং এবং অন্যান্য চার্জ চেকআউটে হিসাব করা হবে</p>
               <div className="border-t border-slate-50 pt-6 flex justify-between text-2xl font-black tracking-tighter">
-                <span>SUBTOTAL</span>
+                <span>উপমোট (Subtotal)</span>
                 <span className="text-orange-600">{CURRENCY_SYMBOL}{subtotal}</span>
               </div>
             </div>
             <button onClick={onCheckout} className="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 transition-all hover:scale-[1.02] active:scale-95">
-              PROCEED TO CHECKOUT
+              চেকআউটে যান
             </button>
             <p className="text-[8px] text-center mt-6 text-slate-300 font-bold uppercase tracking-widest">মুকিত Fast Secure System</p>
           </div>

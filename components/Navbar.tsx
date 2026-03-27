@@ -34,7 +34,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, onCategoryC
     <>
       {/* Top Bar */}
       <div className="bg-green-800 text-white text-[10px] font-semibold py-1.5 px-4 text-center hidden md:block">
-        🚚 ঢাকায় ডেলিভারি মাত্র ৳৭০ | সারা বাংলাদেশে ৳১১০ | বিশ্বস্ত অনলাইন শপিং
+        🚚 ঢাকায় ডেলিভারি মাত্র ৳৬০ | সারা বাংলাদেশে ৳১২০ | বিশ্বস্ত অনলাইন শপিং
       </div>
 
       {/* Main Header */}
@@ -85,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, onCategoryC
               {user ? (
                 <button onClick={() => onNavigate('user-dashboard')} className="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-700 transition">
                   <div className="w-5 h-5 bg-green-700 rounded-full flex items-center justify-center text-white text-[9px] font-black">{user.full_name?.charAt(0) || 'U'}</div>
-                  <span className="text-[9px] font-bold uppercase tracking-wide leading-none">{user.full_name?.split(' ')[0] || 'Account'}</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wide leading-none">{user.full_name?.split(' ')[0] || 'অ্যাকাউন্ট'}</span>
                 </button>
               ) : (
                 <button onClick={() => onNavigate('login')} className="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-700 transition">
@@ -109,7 +109,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, onCategoryC
               </button>
 
               {isAdmin && (
-                <button onClick={() => onNavigate('admin')} className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide hover:bg-blue-700 transition shadow">Admin</button>
+                <button onClick={() => onNavigate('admin')} className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide hover:bg-blue-700 transition shadow">অ্যাডমিন</button>
               )}
               {user && (
                 <button onClick={signOut} className="text-[9px] font-bold text-red-400 hover:text-red-600 uppercase tracking-wide transition">লগআউট</button>
@@ -162,7 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, onCategoryC
               >
                 সব পণ্য
               </button>
-              {categories.slice(0, 10).map(cat => (
+              {categories.map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => { onCategoryClick(cat.id); onNavigate('home'); }}
@@ -172,7 +172,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, onCategoryC
                 </button>
               ))}
               <button className="flex-shrink-0 ml-auto px-5 py-2 bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition flex items-center gap-1.5">
-                ⚡ FLASH SALE
+                ⚡ ফ্ল্যাশ সেল
               </button>
             </div>
           </div>

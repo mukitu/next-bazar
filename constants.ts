@@ -1,8 +1,8 @@
 export const BKASH_NUMBER = "01303595062";
 export const BKASH_CHARGE_RATE = 0.0185;
 export const COD_CHARGE = 10;
-export const SHIPPING_DHAKA = 70;
-export const SHIPPING_OUTSIDE = 110;
+export const SHIPPING_DHAKA = 60;
+export const SHIPPING_OUTSIDE = 120;
 export const CURRENCY_SYMBOL = "৳";
 
 export const ORDER_STATUSES = [

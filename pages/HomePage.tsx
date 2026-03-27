@@ -180,37 +180,16 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
       )}
 
 
-      {/* Category Quick-Jump Bar (only when not searching) */}
-      {!isSearching && sortedCategories.length > 0 && (
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-slate-900">Browse <span className="text-orange-500">Categories</span></h2>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{sortedCategories.length} Departments</span>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-            {sortedCategories.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => scrollToCategory(cat.id)}
-                className={`flex-shrink-0 px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border-2 transition-all hover:scale-105 active:scale-95 ${selectedCategory === cat.id ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'}`}
-              >
-                {cat.name}
-                <span className="ml-2 text-[8px] opacity-50">({products.filter(p => p.category_id === cat.id).length})</span>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* SEARCH RESULTS MODE */}
       {isSearching && (
         <section>
           <div className="flex items-end justify-between mb-10">
             <div>
-              <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-slate-900">Results for "{searchQuery}"</h2>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">{flatFiltered.length} items found</p>
+              <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-slate-900">"{searchQuery}" এর ফলাফল</h2>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">{flatFiltered.length}টি পণ্য পাওয়া গেছে</p>
             </div>
-            <button onClick={() => onSearchChange('')} className="text-[10px] font-black text-orange-600 uppercase tracking-widest hover:underline">Clear</button>
+            <button onClick={() => onSearchChange('')} className="text-[10px] font-black text-orange-600 uppercase tracking-widest hover:underline">মুছে ফেলুন</button>
           </div>
           {flatFiltered.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5 md:gap-8">
@@ -218,7 +197,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
             </div>
           ) : (
             <div className="py-32 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
-              <p className="text-slate-400 font-black text-xs uppercase tracking-[0.2em]">No products found</p>
+              <p className="text-slate-400 font-black text-xs uppercase tracking-[0.2em]">কোনো পণ্য পাওয়া যায়নি</p>
             </div>
           )}
         </section>
@@ -241,11 +220,11 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
                     <div className="w-1.5 h-10 bg-orange-500 rounded-full"></div>
                     <div>
                       <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-slate-900">{cat.name}</h2>
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{catProducts.length} Products</p>
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{catProducts.length}টি পণ্য</p>
                     </div>
                   </div>
                   <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest px-5 py-2.5 rounded-xl border-2 border-orange-100 bg-orange-50">
-                    {catProducts.length} Items
+                    {catProducts.length}টি আইটেম
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 md:gap-8">
@@ -263,8 +242,8 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
               <div className="flex items-center gap-4 mb-8">
                 <div className="w-1.5 h-10 bg-slate-300 rounded-full"></div>
                 <div>
-                  <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-slate-500">Other Products</h2>
-                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-0.5">{uncategorised.length} Products</p>
+                  <h2 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter text-slate-500">অন্যান্য পণ্য</h2>
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-0.5">{uncategorised.length}টি পণ্য</p>
                 </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 md:gap-8">
@@ -283,7 +262,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
-              <p className="text-slate-400 font-black text-xs uppercase tracking-[0.2em]">The collection is currently empty</p>
+              <p className="text-slate-400 font-black text-xs uppercase tracking-[0.2em]">সংগ্রহটি বর্তমানে খালি রয়েছে</p>
             </div>
           )}
         </div>

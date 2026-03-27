@@ -104,21 +104,21 @@ const UserDashboard: React.FC = () => {
         <div className="absolute top-0 right-0 w-96 h-96 bg-orange-600/10 rounded-full -mr-32 -mt-32 blur-[100px]"></div>
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
           <div>
-            <p className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em] mb-4">Account Verified</p>
+            <p className="text-[10px] font-black text-orange-500 uppercase tracking-[0.4em] mb-4">অ্যাকাউন্ট ভেরিফাইড</p>
             <h1 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter mb-2 leading-none">
-              Welcome Back, <span className="text-orange-500">{user?.full_name?.split(' ')[0] || 'User'}</span>
+              স্বাগতম, <span className="text-orange-500">{user?.full_name?.split(' ')[0] || 'ইউজার'}</span>
             </h1>
             <p className="text-slate-500 font-bold uppercase text-[10px] tracking-widest">{user?.email}</p>
           </div>
           
           <div className="grid grid-cols-2 gap-10 pt-10 border-t border-white/5 w-full md:w-auto">
             <div>
-              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2">Total Orders</p>
+              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2">মোট অর্ডার</p>
               <p className="text-3xl font-black italic text-white">{orders.length}</p>
             </div>
             <div>
-              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2">Membership</p>
-              <p className="text-3xl font-black italic text-orange-500">PLATINUM</p>
+              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-2">মেম্বারশিপ</p>
+              <p className="text-3xl font-black italic text-orange-500">কালিনাম</p>
             </div>
           </div>
         </div>
@@ -131,14 +131,14 @@ const UserDashboard: React.FC = () => {
             onClick={() => setActiveTab('orders')}
             className={`w-full flex items-center justify-between px-8 py-6 rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm ${activeTab === 'orders' ? 'bg-slate-900 text-white shadow-xl' : 'bg-white text-slate-400 hover:bg-slate-50 border border-slate-100'}`}
           >
-            Order History
+            অর্ডার হিস্ট্রি
             <span className={`w-6 h-6 rounded-full text-[9px] flex items-center justify-center font-black ${activeTab === 'orders' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-400'}`}>{orders.length}</span>
           </button>
           <button 
             onClick={() => setActiveTab('profile')}
             className={`w-full flex items-center justify-between px-8 py-6 rounded-3xl text-[11px] font-black uppercase tracking-widest transition-all shadow-sm ${activeTab === 'profile' ? 'bg-slate-900 text-white shadow-xl' : 'bg-white text-slate-400 hover:bg-slate-50 border border-slate-100'}`}
           >
-            Account Sync
+            প্রোফাইল আপডেট
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
           </button>
         </div>
@@ -198,24 +198,24 @@ const UserDashboard: React.FC = () => {
                               ))}
                             </div>
                             <div className="flex justify-between mt-5">
-                              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Order Placed</span>
-                              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Approved</span>
-                              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">Package Arrival</span>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">অর্ডার প্লেসড</span>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">অ্যাপ্রুভড</span>
+                              <span className="text-[8px] font-black uppercase tracking-widest text-slate-400">ডেলিভারি সম্পন্ন</span>
                             </div>
                           </div>
                         )}
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pt-12 border-t border-slate-50">
                           <div>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Entry Timestamp</p>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">অর্ডারের তারিখ</p>
                             <p className="text-[11px] font-bold text-slate-800 uppercase italic">{new Date(order.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
                           </div>
                           <div>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Gateway Protocol</p>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">পেমেন্ট পদ্ধতি</p>
                             <p className="text-[11px] font-bold text-slate-800 uppercase italic">{order.payment_method}</p>
                           </div>
                           <div className="col-span-2 text-right">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Settled Amount</p>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">মোট অ্যামাউন্ট</p>
                             <p className="text-4xl font-black text-slate-900 tracking-tighter italic">{CURRENCY_SYMBOL}{order.total_amount}</p>
                           </div>
                         </div>
@@ -254,8 +254,8 @@ const UserDashboard: React.FC = () => {
               <div className="bg-white p-12 md:p-16 rounded-[4rem] shadow-2xl border border-slate-100">
                 <form onSubmit={handleProfileUpdate} className="space-y-12">
                   <div className="flex flex-col gap-3">
-                    <h3 className="text-3xl font-black uppercase italic tracking-tighter text-slate-900">Identity <span className="text-orange-500">Security</span></h3>
-                    <p className="text-[11px] font-bold text-slate-300 uppercase tracking-widest">Global delivery & contact parameters</p>
+                    <h3 className="text-3xl font-black uppercase italic tracking-tighter text-slate-900">পরিচয় <span className="text-orange-500">নিরাপত্তা</span></h3>
+                    <p className="text-[11px] font-bold text-slate-300 uppercase tracking-widest">গ্লোবাল ডেলিভারি এবং কন্টাক্ট প্যারামিটার</p>
                   </div>
                   
                   {message && (

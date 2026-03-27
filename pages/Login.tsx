@@ -51,7 +51,7 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess }) => {
           },
         });
         if (signUpError) throw signUpError;
-        alert("Registration initiated! If email confirmation is required, please check your inbox. Otherwise, you can now login.");
+        alert("রেজিস্ট্রেশন শুরু হয়েছে! যদি ইমেইল যাচাইয়ের প্রয়োজন হয়, তবে আপনার ইনবক্স চেক করুন। অন্যথায়, আপনি এখন লগইন করতে পারবেন।");
         setIsRegistering(false);
         setLoading(false);
       } else {
@@ -90,7 +90,7 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess }) => {
             </span>
           </div>
           <h2 className="text-2xl font-black text-slate-900 uppercase italic tracking-tighter">
-            {isRegistering ? 'Identity Setup' : 'Welcome Back'}
+            {isRegistering ? 'নতুন অ্যাকাউন্ট' : 'স্বাগতম'}
           </h2>
         </div>
 
@@ -103,20 +103,20 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess }) => {
         <form onSubmit={handleAuth} className="space-y-6">
           {isRegistering && (
             <div className="group">
-              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-orange-500 transition-colors">Legal Full Name</label>
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-orange-500 transition-colors">আপনার পূর্ণ নাম</label>
               <input
                 required
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full bg-slate-50 border-2 border-transparent rounded-2xl py-5 px-6 focus:ring-0 focus:border-orange-500/20 focus:bg-white text-sm font-black uppercase italic transition-all outline-none"
-                placeholder="YOUR NAME"
+                placeholder="আপনার নাম লিখুন"
               />
             </div>
           )}
           
           <div className="group">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-orange-500 transition-colors">Email Address</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-orange-500 transition-colors">ইমেইল অ্যাড্রেস</label>
             <input
               required
               type="email"
@@ -128,7 +128,7 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess }) => {
           </div>
 
           <div className="group">
-            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-orange-500 transition-colors">Access Password</label>
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-orange-500 transition-colors">পাসওয়ার্ড</label>
             <input
               required
               type="password"
@@ -147,9 +147,9 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess }) => {
             {loading ? (
               <span className="flex items-center justify-center gap-3">
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                Processing...
+                প্রসেসিং হচ্ছে...
               </span>
-            ) : (isRegistering ? 'Authorize Account' : 'Secure Login')}
+            ) : (isRegistering ? 'অ্যাকাউন্ট তৈরি করুন' : 'লগইন করুন')}
           </button>
         </form>
 
@@ -159,9 +159,9 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess }) => {
             className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-orange-600 transition-all group"
           >
             {isRegistering ? (
-              <span>Already verified? <span className="text-orange-500 group-hover:underline">Login</span></span>
+              <span>আপনার কি অ্যাকাউন্ট আছে? <span className="text-orange-500 group-hover:underline">লগইন করুন</span></span>
             ) : (
-              <span>Don't have an account? <span className="text-orange-500 group-hover:underline">Register</span></span>
+              <span>অ্যাকাউন্ট নেই? <span className="text-orange-500 group-hover:underline">রেজিস্ট্রেশন করুন</span></span>
             )}
           </button>
         </div>
