@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase, fetchProducts, fetchCategories, addCategory, deleteCategory, fetchSitePages } from '../lib/supabase';
 import { CURRENCY_SYMBOL, STATUS_COLORS, ORDER_STATUSES } from '../constants';
 import { Order, Product, Category, SitePage } from '../types';
+import * as XLSX from 'xlsx';
+
 
 interface AdminDashboardProps {
   onNavigatePage?: (slug: string) => void;
@@ -340,6 +342,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigatePage }) => {
     }
   };
 
+  const handleExportProducts = () => {
+    if (products.length === 0) {
+      alert("No products to export.");
+      return;
+    }
+
+    const exportData = products.map(p => {
+      const category = categories.find(c => c.id === p.category_id);
+      return {
+        'Category': category ? category.name : 'Unknown',
+        'Product Title': p.name,
+        'Price': p.price,
+        'Description': p.description
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+    XLSX.writeFile(workbook, `products_export_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
 
 
 
@@ -416,6 +440,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigatePage }) => {
           <div className="flex gap-4">
             {activeTab === 'products' && (
               <>
+                <button onClick={handleExportProducts} className="bg-green-600 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-green-700 shadow-sm transition-all border border-green-500">Export (Excel)</button>
                 <button onClick={handleBulkFetchDropUpSeller} className="bg-slate-900 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 shadow-sm transition-all border border-slate-700">Sync Inventory (API)</button>
                 <button onClick={() => { setFormState({ name: '', price: '', discount_price: '', stock: '', category_id: '', description: '', image_url: '', is_featured: false, is_flash_sale: false, rating: '5', review_count: '0' }); setModalMode('add-product'); setEditingProduct(null); }} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 shadow-xl transition-all">Launch Product</button>
               </>
