@@ -45,7 +45,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, currentPage
             <div className="flex-shrink-0 cursor-pointer" onClick={() => onNavigate('home')}>
               <div className="flex flex-col leading-none">
                 <span className="text-xl md:text-2xl font-black text-green-700 tracking-tight uppercase">
-                  NEXT<span className="text-orange-500">BAZAR</span>
+                  মুকি<span className="text-orange-500">ত</span>
                 </span>
                 <span className="text-[8px] font-bold text-gray-400 tracking-widest uppercase">Premium E-Commerce</span>
               </div>

@@ -86,7 +86,7 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess }) => {
         <div className="text-center mb-12 relative">
           <div className="flex flex-col -space-y-1 mb-8">
             <span className="text-4xl font-black text-slate-900 tracking-tighter uppercase italic">
-              Next<span className="text-orange-500">Bazar</span>
+              মুকি<span className="text-orange-500">ত</span>
             </span>
             <span className="text-[10px] font-black tracking-[0.4em] text-slate-300 uppercase">Premium Shopping</span>
           </div>

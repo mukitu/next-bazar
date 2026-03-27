@@ -26,7 +26,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Load cart from local storage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('amar_bazar_cart');
+    const saved = localStorage.getItem('mukit_cart');
     if (saved) {
       try { 
         setCart(JSON.parse(saved)); 
@@ -38,7 +38,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Sync cart to local storage
   useEffect(() => {
-    localStorage.setItem('amar_bazar_cart', JSON.stringify(cart));
+    localStorage.setItem('mukit_cart', JSON.stringify(cart));
   }, [cart]);
 
   const addToCart = (product: Product, quantity: number = 1) => {

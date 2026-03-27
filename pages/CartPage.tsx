@@ -70,7 +70,7 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
             <button onClick={onCheckout} className="w-full bg-slate-900 text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl hover:bg-orange-600 transition-all hover:scale-[1.02] active:scale-95">
               PROCEED TO CHECKOUT
             </button>
-            <p className="text-[8px] text-center mt-6 text-slate-300 font-bold uppercase tracking-widest">NextBazar Fast Secure System</p>
+            <p className="text-[8px] text-center mt-6 text-slate-300 font-bold uppercase tracking-widest">মুকিত Fast Secure System</p>
           </div>
         </div>
       </div>

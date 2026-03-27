@@ -102,7 +102,7 @@ const MainContent: React.FC = () => {
         <div className="text-center relative">
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-orange-500/10 rounded-full blur-[80px]"></div>
           <div className="text-4xl md:text-5xl font-black mb-6 tracking-tighter uppercase italic text-white relative">
-            Next<span className="text-orange-500">Bazar</span>
+            মুকি<span className="text-orange-500">ত</span>
           </div>
           <div className="w-48 h-1 bg-slate-800 rounded-full overflow-hidden mx-auto relative">
             <div className="h-full bg-orange-500 animate-[shimmer_1.5s_infinite] w-full origin-left"></div>
@@ -172,14 +172,14 @@ const MainContent: React.FC = () => {
             {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <div className="mb-4">
-                <span className="text-2xl font-black text-white uppercase tracking-tight">NEXT<span className="text-orange-500">BAZAR</span></span>
+                <span className="text-2xl font-black text-white uppercase tracking-tight">মুকি<span className="text-orange-500">ত</span></span>
                 <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Premium E-Commerce</p>
               </div>
               <p className="text-xs text-gray-400 leading-relaxed mb-4">বিশ্বস্ত অনলাইন শপিং প্ল্যাটফর্ম। সেরা মানের পণ্য, দ্রুত ডেলিভারি।</p>
               <div className="space-y-2 text-xs text-gray-400">
                 <p className="flex items-center gap-2">📍 ঢাকা, বাংলাদেশ</p>
                 <p className="flex items-center gap-2">📞 01700-000000</p>
-                <p className="flex items-center gap-2">✉️ support@nextbazar.com</p>
+                <p className="flex items-center gap-2">✉️ support@mukit.com</p>
               </div>
               <div className="flex gap-3 mt-5">
                 <a href="#" className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold hover:bg-blue-700 transition">f</a>
@@ -243,7 +243,7 @@ const MainContent: React.FC = () => {
 
           {/* Payment Methods + Copyright */}
           <div className="max-w-7xl mx-auto px-6 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-[11px] text-gray-500">© ২০২৬ NextBazar. সমস্ত অধিকার সংরক্ষিত।</p>
+            <p className="text-[11px] text-gray-500">© ২০২৬ মুকিত. সমস্ত অধিকার সংরক্ষিত।</p>
             <div className="flex items-center gap-2 flex-wrap justify-center">
               <span className="text-[10px] text-gray-500 font-semibold mr-1">পেমেন্ট করুন:</span>
               {['VISA', 'MasterCard', 'bKash', 'Nagad', 'Rocket', 'COD'].map(method => (

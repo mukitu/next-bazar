@@ -1,5 +1,5 @@
 -- =============================================
--- NextBazar: Site Pages Table (Policy & Info)
+-- মুকিত: Site Pages Table (Policy & Info)
 -- Run this in Supabase SQL Editor
 -- =============================================
 
@@ -32,20 +32,20 @@ CREATE POLICY "Admins can manage pages"
 -- Insert default Info pages
 INSERT INTO site_pages (slug, title, content, page_type, sort_order) VALUES
 ('about-us', 'আমাদের সম্পর্কে', '<div style="font-family: sans-serif; line-height: 1.8; color: #333;">
-<h2 style="color: #15803d; font-size: 24px; margin-bottom: 16px;">NextBazar সম্পর্কে</h2>
-<p>NextBazar বাংলাদেশের একটি বিশ্বস্ত অনলাইন শপিং প্ল্যাটফর্ম। আমরা ২০২৪ সাল থেকে গ্রাহকদের সেরা মানের পণ্য সরবরাহ করে আসছি।</p>
+<h2 style="color: #15803d; font-size: 24px; margin-bottom: 16px;">মুকিত সম্পর্কে</h2>
+<p>মুকিত বাংলাদেশের একটি বিশ্বস্ত অনলাইন শপিং প্ল্যাটফর্ম। আমরা ২০২৪ সাল থেকে গ্রাহকদের সেরা মানের পণ্য সরবরাহ করে আসছি।</p>
 <p style="margin-top: 12px;">আমাদের লক্ষ্য হলো প্রতিটি বাংলাদেশি পরিবারের কাছে সহজে, দ্রুত এবং সাশ্রয়ী মূল্যে মানসম্পন্ন পণ্য পৌঁছে দেওয়া।</p>
 <h3 style="color: #15803d; margin-top: 24px; font-size: 18px;">আমাদের মিশন</h3>
 <p>বাংলাদেশের প্রতিটি ঘরে বিশ্বমানের পণ্য সহজলভ্য করা।</p>
 <h3 style="color: #15803d; margin-top: 24px; font-size: 18px;">যোগাযোগ করুন</h3>
-<p>📞 01700-000000 | ✉️ support@nextbazar.com</p>
+<p>📞 01700-000000 | ✉️ support@mukit.com</p>
 </div>', 'info', 1),
 
 ('contact', 'যোগাযোগ', '<div style="font-family: sans-serif; line-height: 1.8; color: #333;">
 <h2 style="color: #15803d; font-size: 24px; margin-bottom: 16px;">আমাদের সাথে যোগাযোগ করুন</h2>
 <div style="background: #f0fdf4; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
 <p>📞 <strong>ফোন:</strong> 01700-000000</p>
-<p style="margin-top: 8px;">✉️ <strong>ইমেইল:</strong> support@nextbazar.com</p>
+<p style="margin-top: 8px;">✉️ <strong>ইমেইল:</strong> support@mukit.com</p>
 <p style="margin-top: 8px;">📍 <strong>ঠিকানা:</strong> ঢাকা, বাংলাদেশ</p>
 <p style="margin-top: 8px;">⏰ <strong>সময়:</strong> সকাল ৯টা - রাত ১০টা (সাত দিন)</p>
 </div>
@@ -54,7 +54,7 @@ INSERT INTO site_pages (slug, title, content, page_type, sort_order) VALUES
 
 ('terms', 'শর্তাবলী', '<div style="font-family: sans-serif; line-height: 1.8; color: #333;">
 <h2 style="color: #15803d; font-size: 24px; margin-bottom: 16px;">শর্তাবলী ও নিয়মকানুন</h2>
-<p>NextBazar ব্যবহার করার আগে অনুগ্রহ করে নিচের শর্তাবলী মনোযোগ দিয়ে পড়ুন।</p>
+<p>মুকিত ব্যবহার করার আগে অনুগ্রহ করে নিচের শর্তাবলী মনোযোগ দিয়ে পড়ুন।</p>
 <h3 style="color: #15803d; margin-top: 20px;">১. অর্ডার</h3>
 <p>অর্ডার দেওয়ার পর ২৪ ঘণ্টার মধ্যে বাতিল করা যাবে।</p>
 <h3 style="color: #15803d; margin-top: 20px;">২. পেমেন্ট</h3>
@@ -76,9 +76,9 @@ INSERT INTO site_pages (slug, title, content, page_type, sort_order) VALUES
 
 ('career', 'ক্যারিয়ার', '<div style="font-family: sans-serif; line-height: 1.8; color: #333;">
 <h2 style="color: #15803d; font-size: 24px; margin-bottom: 16px;">ক্যারিয়ার সুযোগ</h2>
-<p>NextBazar এ যোগ দিন এবং বাংলাদেশের ই-কমার্স খাতকে এগিয়ে নিয়ে যান।</p>
+<p>মুকিত এ যোগ দিন এবং বাংলাদেশের ই-কমার্স খাতকে এগিয়ে নিয়ে যান।</p>
 <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; margin-top: 16px;">
-<p><strong>📧 CV পাঠান:</strong> career@nextbazar.com</p>
+<p><strong>📧 CV পাঠান:</strong> career@mukit.com</p>
 </div>
 </div>', 'info', 5),
 
