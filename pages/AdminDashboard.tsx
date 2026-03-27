@@ -69,7 +69,7 @@ const AdminDashboard: React.FC = () => {
       name: formState.name,
       slug: finalSlug,
       price: parseFloat(formState.price),
-      discount_price: formState.discount_price ? parseFloat(formState.discount_price) : null,
+      discount_price: null as any,
       stock: parseInt(formState.stock),
       category_id: formState.category_id,
       description: formState.description,
@@ -198,8 +198,8 @@ const AdminDashboard: React.FC = () => {
         const payload = {
           name: item.name || item.title,
           slug: slugStr,
-          price: parseFloat(item.base_price || item.price || 0),
-          discount_price: parseFloat(item.suggested_price || item.discount_price) || null,
+          price: parseFloat(item.base_price || item.price || 0) + 150, // Added 150 to dropshipping price automatically
+          discount_price: null, // Removed separate sale value
           stock: parseInt(item.quantity || item.stock || 150),
           category_id: finalCategoryId, 
           description: item.description || item.details || "Imported Bulk Item",
@@ -253,7 +253,7 @@ const AdminDashboard: React.FC = () => {
     setFormState({
       name: p.name, 
       price: p.price.toString(), 
-      discount_price: p.discount_price?.toString() || '',
+      discount_price: null as any,
       stock: p.stock.toString(), 
       category_id: p.category_id, 
       description: p.description || '',
@@ -452,14 +452,10 @@ const AdminDashboard: React.FC = () => {
                       <input required className="w-full bg-slate-50 border-2 border-transparent focus:border-orange-500/20 p-5 rounded-2xl font-black text-sm uppercase italic outline-none focus:bg-white transition-all shadow-inner" value={formState.name} onChange={e => setFormState({...formState, name: e.target.value})} placeholder="PRODUCT NAME..." />
                    </div>
                    
-                   <div className="grid grid-cols-2 gap-6">
+                   <div className="grid grid-cols-1 gap-6">
                      <div>
-                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Market Price</label>
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Price (Market Value)</label>
                         <input required type="number" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.price} onChange={e => setFormState({...formState, price: e.target.value})} placeholder="0.00" />
-                     </div>
-                     <div>
-                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-3 block ml-1">Sale Value</label>
-                        <input type="number" className="w-full bg-slate-50 border-2 border-transparent p-5 rounded-2xl font-black text-sm outline-none focus:border-orange-500/20 focus:bg-white transition-all shadow-inner" value={formState.discount_price} onChange={e => setFormState({...formState, discount_price: e.target.value})} placeholder="OPTIONAL" />
                      </div>
                    </div>
 
