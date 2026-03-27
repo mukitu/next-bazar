@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase, fetchProducts, fetchCategories, addCategory, deleteCategory, fetchSitePages } from '../lib/supabase';
 import { CURRENCY_SYMBOL, STATUS_COLORS, ORDER_STATUSES } from '../constants';
 import { Order, Product, Category, SitePage } from '../types';
 import * as XLSX from 'xlsx';
+
 
 
 interface AdminDashboardProps {
@@ -343,25 +343,54 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigatePage }) => {
   };
 
   const handleExportProducts = () => {
-    if (products.length === 0) {
-      alert("No products to export.");
-      return;
+    try {
+      if (!products || products.length === 0) {
+        alert("No products to export.");
+        return;
+      }
+
+      console.log("Preparing data for export...");
+      const exportData = products.map(p => {
+        const category = categories.find(c => c.id === p.category_id);
+        return {
+          'Category': category ? category.name : 'Unknown',
+          'Product Title': p.name,
+          'Price': p.price,
+          'Description': p.description || ''
+        };
+      });
+
+      // Create worksheet and workbook
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+
+      // Set column widths for better look
+      const wscols = [
+        { wch: 20 }, // Category
+        { wch: 40 }, // Title
+        { wch: 15 }, // Price
+        { wch: 50 }, // Description
+      ];
+      worksheet['!cols'] = wscols;
+
+      // Manual download trigger using Blob (more compatible than writeFile)
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `products_export_${new Date().toLocaleDateString()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      console.log("Download triggered successfully!");
+    } catch (err: any) {
+      console.error("Critical Export Error:", err);
+      alert("Error: " + err.message);
     }
-
-    const exportData = products.map(p => {
-      const category = categories.find(c => c.id === p.category_id);
-      return {
-        'Category': category ? category.name : 'Unknown',
-        'Product Title': p.name,
-        'Price': p.price,
-        'Description': p.description
-      };
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
-    XLSX.writeFile(workbook, `products_export_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
 
