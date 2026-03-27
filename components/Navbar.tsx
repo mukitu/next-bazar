@@ -10,11 +10,12 @@ interface NavbarProps {
   onNavigatePage: (slug: string) => void;
   onCategoryClick: (catId: string) => void;
   currentPage: string;
+  activeCategoryId?: string | null;
   searchQuery: string;
   onSearchChange: (q: string) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, onCategoryClick, currentPage, searchQuery, onSearchChange }) => {
+const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, onCategoryClick, currentPage, activeCategoryId, searchQuery, onSearchChange }) => {
   const { cart } = useCart();
   const { user, isAdmin, signOut } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -158,15 +159,15 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, onCategoryC
             <div className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
               <button
                 onClick={() => onNavigate('home')}
-                className="flex-shrink-0 px-4 py-2.5 text-white text-[11px] font-bold uppercase tracking-wide hover:bg-green-700 transition whitespace-nowrap"
+                className={`flex-shrink-0 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wide transition whitespace-nowrap ${!activeCategoryId && currentPage === 'home' ? 'bg-green-700 text-white shadow-inner' : 'text-green-100 hover:bg-green-700 hover:text-white'}`}
               >
                 সব পণ্য
               </button>
               {categories.map(cat => (
                 <button
                   key={cat.id}
-                  onClick={() => { onCategoryClick(cat.id); onNavigate('home'); }}
-                  className="flex-shrink-0 px-4 py-2.5 text-green-100 text-[11px] font-semibold hover:bg-green-700 hover:text-white transition whitespace-nowrap"
+                  onClick={() => onCategoryClick(cat.id)}
+                  className={`flex-shrink-0 px-4 py-2.5 text-[11px] font-semibold transition whitespace-nowrap ${activeCategoryId === cat.id ? 'bg-green-700 text-white shadow-inner' : 'text-green-100 hover:bg-green-700 hover:text-white'}`}
                 >
                   {cat.name}
                 </button>

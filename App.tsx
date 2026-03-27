@@ -80,11 +80,11 @@ const MainContent: React.FC = () => {
     }
   }, [authLoading]);
 
-  const navigate = (page: string) => {
+  const navigate = (page: string, keepCategory = false) => {
     window.location.hash = page;
     window.scrollTo({ top: 0, behavior: 'instant' });
     setGlobalSearch(''); // clear search on navigation
-    setActiveCategoryId(null); // clear category on navigation
+    if (!keepCategory) setActiveCategoryId(null); // clear category on navigation
   };
 
   const navigateToPage = (slug: string) => {
@@ -163,7 +163,20 @@ const MainContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {currentPage !== 'admin' && <Navbar onNavigate={navigate} onNavigatePage={navigateToPage} onCategoryClick={setActiveCategoryId} currentPage={currentPage} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />}
+      {currentPage !== 'admin' && (
+        <Navbar 
+          onNavigate={navigate} 
+          onNavigatePage={navigateToPage} 
+          onCategoryClick={(id) => {
+            setActiveCategoryId(id);
+            navigate('home', true);
+          }} 
+          currentPage={currentPage} 
+          activeCategoryId={activeCategoryId}
+          searchQuery={globalSearch} 
+          onSearchChange={setGlobalSearch} 
+        />
+      )}
       <main className="flex-1">
         {renderPage()}
       </main>

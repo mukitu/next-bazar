@@ -23,16 +23,10 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
     fetchCategories().then(setCategories);
   }, []);
 
-  // Scroll to category when prop changes (from Navbar)
+  // When category changes, scroll to top of results
   useEffect(() => {
     if (selectedCategory) {
-      const el = sectionRefs.current[selectedCategory];
-      if (el) {
-        // Delay slightly to ensure content is rendered
-        setTimeout(() => {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [selectedCategory]);
 
@@ -59,17 +53,13 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
   // Products with no or unknown category
   const uncategorised = products.filter(p => !p.category_id || !categories.find(c => c.id === p.category_id));
 
-  const scrollToCategory = (catId: string) => {
-    onCategoryChange(catId);
-    const el = sectionRefs.current[catId];
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 animate-fadeIn pb-32">
 
       {/* Hero Slider — Professional Split Layout */}
-      {featuredProducts.length > 0 && (
+      {featuredProducts.length > 0 && !selectedCategory && !isSearching && (
         <section className="relative overflow-hidden mb-10 md:mb-16">
           {/* Slide Track */}
           <div
@@ -206,7 +196,9 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
       {/* CATEGORY-WISE A to Z product sections */}
       {!isSearching && (
         <div className="space-y-20">
-          {sortedCategories.map(cat => {
+          {sortedCategories
+            .filter(cat => !selectedCategory || cat.id === selectedCategory)
+            .map(cat => {
             const catProducts = products.filter(p => p.category_id === cat.id);
             if (catProducts.length === 0) return null;
             return (
