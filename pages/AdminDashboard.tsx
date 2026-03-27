@@ -12,10 +12,12 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   
   // Modals & Search
-  const [modalMode, setModalMode] = useState<'add-product' | 'edit-product' | 'add-category' | 'none'>('none');
+  const [modalMode, setModalMode] = useState<'add-product' | 'edit-product' | 'add-category' | 'dropupseller' | 'none'>('none');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [newCatName, setNewCatName] = useState('');
+  const [bulkPercentage, setBulkPercentage] = useState('');
+  const [dropUrl, setDropUrl] = useState('');
 
   const [formState, setFormState] = useState({
     name: '', 
@@ -115,6 +117,97 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleBulkPriceIncrease = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulkPercentage || isNaN(Number(bulkPercentage))) return;
+    const confirm = window.confirm(`Are you sure you want to increase prices of ALL products by ${bulkPercentage}%?`);
+    if (!confirm) return;
+
+    try {
+      // Trying Supabase RPC which we will provide via SQL for the user
+      const { error } = await supabase.rpc('bulk_increase_price', { percentage: parseFloat(bulkPercentage) });
+      if (error) {
+        alert("SQL Error: " + error.message + "\n\nPlease ensure you have run the required SQL query in Supabase SQL editor to create the `bulk_increase_price` function.");
+      } else {
+        alert(`Successfully increased all prices by ${bulkPercentage}%!`);
+        setBulkPercentage('');
+        loadData();
+      }
+    } catch (err: any) {
+      alert("Error updating prices: " + err.message);
+    }
+  };
+
+  const handleFetchDropUpSeller = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!dropUrl) return;
+    
+    try {
+      // Configuration based on provided credentials
+      const apiKey = "MLFHFe8JDWNNThvJxL4heD8RD";
+      const apiSecret = "HT5zuPmg9bBqI5BKN2kmYvr4Qvl7YIi3EyW7SvtfNabMz";
+
+      // If they provided a raw dropupseller website link, we could need to send it to an official API URL endpoint.
+      // E.g., const targetUrl = `https://api.dropupseller.com/v1/products/import?url=${encodeURIComponent(dropUrl)}`;
+      // Assuming dropUrl could be the direct API endpoint or we attempt a direct fetch.
+      let targetApiUrl = dropUrl;
+
+      const res = await fetch(targetApiUrl, {
+        method: 'GET', // Switch to POST if their doc requires it
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'X-API-Secret': apiSecret,
+          'API-Key': apiKey,
+          'API-Secret': apiSecret
+        }
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch API. Status Code: ${res.status}`);
+      }
+
+      const data = await res.json();
+      
+      alert("API connection successfully established with DropUPSeller.\nProduct data imported for customization!");
+      
+      setFormState({
+         name: data.name || data.title || 'Imported Fashion Item',
+         price: data.price?.toString() || data.regular_price?.toString() || '0',
+         discount_price: data.sale_price?.toString() || data.discount_price?.toString() || '',
+         stock: data.stock?.toString() || data.quantity?.toString() || '150',
+         category_id: categories.length > 0 ? categories[0].id : '',
+         description: data.description || data.details || 'Premium quality product imported seamlessly from dropupseller API. Original URL: ' + dropUrl,
+         image_url: data.image || data.images?.[0] || data.thumbnail || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
+         is_featured: false,
+         is_flash_sale: false,
+         rating: '5',
+         review_count: '0'
+      });
+      
+    } catch (err: any) {
+      alert("API Integration Pending / Error: " + err.message + "\n\n(Note: Browsers often block frontend-only API requests (CORS error) or the URL provided isn't a strict API json endpoint.)\n\nFallback simulated data triggered so you can still preview the feature.");
+      
+      // Simulating a successful mapping for UX if actual endpoint fails
+      setFormState({
+         name: 'Imported DropUPSeller Product (Simulation)',
+         price: '500',
+         discount_price: '450',
+         stock: '150',
+         category_id: categories.length > 0 ? categories[0].id : '',
+         description: 'Premium quality product testing. Original Source URL: ' + dropUrl,
+         image_url: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
+         is_featured: false,
+         is_flash_sale: false,
+         rating: '5',
+         review_count: '0'
+      });
+    }
+
+    setDropUrl('');
+    setModalMode('add-product');
+  };
+
   const startEditProduct = (p: Product) => {
     setEditingProduct(p);
     setFormState({
@@ -186,7 +279,14 @@ const AdminDashboard: React.FC = () => {
           
           <div className="flex gap-4">
             {activeTab === 'products' && (
-              <button onClick={() => { setFormState({ name: '', price: '', discount_price: '', stock: '', category_id: '', description: '', image_url: '', is_featured: false, is_flash_sale: false, rating: '5', review_count: '0' }); setModalMode('add-product'); setEditingProduct(null); }} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 shadow-xl transition-all">Launch Product</button>
+              <>
+                <button onClick={() => setModalMode('dropupseller')} className="bg-orange-100 text-orange-600 px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-200 shadow-sm transition-all">Import DropUPSeller</button>
+                <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-2xl">
+                   <input type="number" placeholder="Bulk % Increase" className="w-32 bg-white px-3 py-2 rounded-xl text-xs font-black outline-none border border-slate-200" value={bulkPercentage} onChange={e => setBulkPercentage(e.target.value)} />
+                   <button onClick={handleBulkPriceIncrease} className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all">Apply</button>
+                </div>
+                <button onClick={() => { setFormState({ name: '', price: '', discount_price: '', stock: '', category_id: '', description: '', image_url: '', is_featured: false, is_flash_sale: false, rating: '5', review_count: '0' }); setModalMode('add-product'); setEditingProduct(null); }} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 shadow-xl transition-all">Launch Product</button>
+              </>
             )}
           </div>
         </header>
@@ -360,6 +460,22 @@ const AdminDashboard: React.FC = () => {
                       </div>
                    </div>
                  </div>
+               </form>
+            </div>
+          </div>
+        )}
+
+        {/* MODAL: DROPUPSeller IMPORT */}
+        {modalMode === 'dropupseller' && (
+          <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[100] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-fadeIn">
+               <div className="flex justify-between items-center mb-10">
+                 <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900">Import from <span className="text-orange-500">DropUPSeller</span></h2>
+                 <button onClick={() => setModalMode('none')} className="text-2xl font-black">×</button>
+               </div>
+               <form onSubmit={handleFetchDropUpSeller} className="space-y-6">
+                 <input required type="url" className="w-full bg-slate-50 border-none p-5 rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-orange-500/20" value={dropUrl} onChange={e => setDropUrl(e.target.value)} placeholder="Paste DropUPSeller Product URL..." />
+                 <button type="submit" className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl hover:bg-orange-600 transition-all">Fetch Product Data</button>
                </form>
             </div>
           </div>

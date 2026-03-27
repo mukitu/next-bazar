@@ -30,6 +30,8 @@ export interface Product {
   images: string[];
   is_featured: boolean;
   is_flash_sale: boolean;
+  rating?: number;
+  review_count?: number;
   created_at: string;
 }
 
