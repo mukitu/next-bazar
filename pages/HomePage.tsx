@@ -8,11 +8,12 @@ import { CURRENCY_SYMBOL } from '../constants';
 interface HomePageProps {
   products: Product[];
   onProductClick: (product: Product) => void;
+  searchQuery: string;
+  onSearchChange: (q: string) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ products, onProductClick }) => {
+const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQuery, onSearchChange }) => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
@@ -52,22 +53,6 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick }) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 animate-fadeIn pb-32">
-
-      {/* Search Bar */}
-      <div className="mb-8">
-        <div className="relative group">
-          <input
-            type="text"
-            placeholder="Search products by name..."
-            className="w-full bg-white border-none rounded-[2rem] py-5 px-14 shadow-xl shadow-slate-200/40 text-sm font-medium focus:ring-4 focus:ring-orange-500/10 transition-all"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <svg className="w-6 h-6 absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-orange-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-      </div>
 
       {/* Hero Slider — Professional Split Layout */}
       {featuredProducts.length > 0 && (
@@ -211,7 +196,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick }) => {
               <h2 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter text-slate-900">Results for "{searchQuery}"</h2>
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">{flatFiltered.length} items found</p>
             </div>
-            <button onClick={() => setSearchQuery('')} className="text-[10px] font-black text-orange-600 uppercase tracking-widest hover:underline">Clear</button>
+            <button onClick={() => onSearchChange('')} className="text-[10px] font-black text-orange-600 uppercase tracking-widest hover:underline">Clear</button>
           </div>
           {flatFiltered.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5 md:gap-8">

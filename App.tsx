@@ -10,6 +10,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import AdminDashboard from './pages/AdminDashboard';
 import UserDashboard from './pages/UserDashboard';
 import Login from './pages/Login';
+import SitePageView from './pages/SitePageView';
 import { Product } from './types';
 import { fetchProducts } from './lib/supabase';
 
@@ -19,6 +20,8 @@ const MainContent: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [currentPageSlug, setCurrentPageSlug] = useState('');
   const { user, isAdmin, loading: authLoading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
 
@@ -79,6 +82,12 @@ const MainContent: React.FC = () => {
   const navigate = (page: string) => {
     window.location.hash = page;
     window.scrollTo({ top: 0, behavior: 'instant' });
+    setGlobalSearch(''); // clear search on navigation
+  };
+
+  const navigateToPage = (slug: string) => {
+    setCurrentPageSlug(slug);
+    navigate('page');
   };
 
   const onProductClick = (p: Product) => {
@@ -134,24 +143,25 @@ const MainContent: React.FC = () => {
             </div>
           );
         }
-        return <HomePage products={products} onProductClick={onProductClick} />;
-      case 'product': return selectedProduct ? <ProductPage product={selectedProduct} /> : <HomePage products={products} onProductClick={onProductClick} />;
+        return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
+      case 'product': return selectedProduct ? <ProductPage product={selectedProduct} /> : <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
       case 'cart': return <CartPage onCheckout={() => navigate('checkout')} onShop={() => navigate('home')} />;
       case 'checkout': return <CheckoutPage onComplete={() => navigate('user-dashboard')} />;
       case 'admin': 
-        if (isAdmin) return <AdminDashboard />;
-        return <HomePage products={products} onProductClick={onProductClick} />;
+        if (isAdmin) return <AdminDashboard onNavigatePage={navigateToPage} />;
+        return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
       case 'user-dashboard': 
       case 'orders': 
         return user ? <UserDashboard /> : <Login onAuthSuccess={() => navigate('user-dashboard')} />;
       case 'login': return <Login onAuthSuccess={() => navigate('home')} />;
-      default: return <HomePage products={products} onProductClick={onProductClick} />;
+      case 'page': return currentPageSlug ? <SitePageView slug={currentPageSlug} onBack={() => navigate('home')} /> : <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
+      default: return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {currentPage !== 'admin' && <Navbar onNavigate={navigate} currentPage={currentPage} />}
+      {currentPage !== 'admin' && <Navbar onNavigate={navigate} onNavigatePage={navigateToPage} currentPage={currentPage} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />}
       <main className="flex-1">
         {renderPage()}
       </main>
@@ -182,8 +192,14 @@ const MainContent: React.FC = () => {
             <div>
               <h4 className="text-white font-black text-xs uppercase tracking-widest mb-5 border-b border-gray-700 pb-3">তথ্য</h4>
               <ul className="space-y-2.5 text-xs text-gray-400">
-                {['আমাদের সম্পর্কে', 'যোগাযোগ', 'শর্তাবলী', 'গোপনীয়তা নীতি', 'ক্যারিয়ার'].map(item => (
-                  <li key={item}><a href="#" className="hover:text-orange-400 transition">{item}</a></li>
+                {[
+                  { label: 'আমাদের সম্পর্কে', slug: 'about-us' },
+                  { label: 'যোগাযোগ', slug: 'contact' },
+                  { label: 'শর্তাবলী', slug: 'terms' },
+                  { label: 'গোপনীয়তা নীতি', slug: 'privacy' },
+                  { label: 'ক্যারিয়ার', slug: 'career' },
+                ].map(item => (
+                  <li key={item.slug}><button onClick={() => navigateToPage(item.slug)} className="hover:text-orange-400 transition text-left">{item.label}</button></li>
                 ))}
               </ul>
             </div>
@@ -193,7 +209,7 @@ const MainContent: React.FC = () => {
               <h4 className="text-white font-black text-xs uppercase tracking-widest mb-5 border-b border-gray-700 pb-3">কেনাকাটা</h4>
               <ul className="space-y-2.5 text-xs text-gray-400">
                 {['নতুন পণ্য', 'ফ্ল্যাশ সেল', 'বিশেষ অফার', 'ফিচার্ড পণ্য', 'সব পণ্য'].map(item => (
-                  <li key={item}><a href="#" className="hover:text-orange-400 transition">{item}</a></li>
+                  <li key={item}><button onClick={() => navigate('home')} className="hover:text-orange-400 transition text-left">{item}</button></li>
                 ))}
               </ul>
             </div>
@@ -203,7 +219,7 @@ const MainContent: React.FC = () => {
               <h4 className="text-white font-black text-xs uppercase tracking-widest mb-5 border-b border-gray-700 pb-3">সাপোর্ট</h4>
               <ul className="space-y-2.5 text-xs text-gray-400">
                 {['সাপোর্ট সেন্টার', 'কিভাবে অর্ডার করবেন', 'অর্ডার ট্র্যাকিং', 'পেমেন্ট', 'শিপিং', 'FAQ'].map(item => (
-                  <li key={item}><a href="#" className="hover:text-orange-400 transition">{item}</a></li>
+                  <li key={item}><span className="hover:text-orange-400 transition cursor-pointer">{item}</span></li>
                 ))}
               </ul>
             </div>
@@ -212,8 +228,14 @@ const MainContent: React.FC = () => {
             <div>
               <h4 className="text-white font-black text-xs uppercase tracking-widest mb-5 border-b border-gray-700 pb-3">পলিসি</h4>
               <ul className="space-y-2.5 text-xs text-gray-400">
-                {['রিটার্ন পলিসি', 'রিফান্ড পলিসি', 'এক্সচেঞ্জ', 'বাতিল করুন', 'এক্সট্রা ডিসকাউন্ট'].map(item => (
-                  <li key={item}><a href="#" className="hover:text-orange-400 transition">{item}</a></li>
+                {[
+                  { label: 'রিটার্ন পলিসি', slug: 'return-policy' },
+                  { label: 'রিফান্ড পলিসি', slug: 'refund-policy' },
+                  { label: 'এক্সচেঞ্জ', slug: 'exchange' },
+                  { label: 'বাতিল করুন', slug: 'cancellation' },
+                  { label: 'এক্সট্রা ডিসকাউন্ট', slug: 'extra-discount' },
+                ].map(item => (
+                  <li key={item.slug}><button onClick={() => navigateToPage(item.slug)} className="hover:text-orange-400 transition text-left">{item.label}</button></li>
                 ))}
               </ul>
             </div>

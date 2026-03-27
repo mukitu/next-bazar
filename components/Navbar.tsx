@@ -7,19 +7,27 @@ import { Category } from '../types';
 
 interface NavbarProps {
   onNavigate: (page: string) => void;
+  onNavigatePage: (slug: string) => void;
   currentPage: string;
+  searchQuery: string;
+  onSearchChange: (q: string) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
+const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, currentPage, searchQuery, onSearchChange }) => {
   const { cart } = useCart();
   const { user, isAdmin, signOut } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
     fetchCategories().then(setCategories);
   }, []);
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      onNavigate('home');
+    }
+  };
 
   return (
     <>
@@ -43,18 +51,21 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
               </div>
             </div>
 
-            {/* Search Bar — Desktop */}
+            {/* Search Bar — Desktop (controlled by global state) */}
             <div className="hidden md:flex flex-1 max-w-2xl">
               <div className="flex w-full rounded-full overflow-hidden border-2 border-green-700 bg-white">
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && searchQuery) onNavigate('home'); }}
+                  onChange={e => { onSearchChange(e.target.value); if (currentPage !== 'home') onNavigate('home'); }}
+                  onKeyDown={handleSearchKeyDown}
                   placeholder="পণ্য খুঁজুন..."
                   className="flex-1 px-5 py-2.5 text-sm outline-none text-gray-700 font-medium"
                 />
-                <button className="bg-green-700 hover:bg-green-800 transition px-6 flex items-center justify-center">
+                <button
+                  onClick={() => { if (searchQuery.trim()) onNavigate('home'); }}
+                  className="bg-green-700 hover:bg-green-800 transition px-6 flex items-center justify-center"
+                >
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
@@ -64,7 +75,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
 
             {/* Right Icons — Desktop */}
             <div className="hidden md:flex items-center gap-6 ml-auto flex-shrink-0">
-              {/* Track Order */}
               <button onClick={() => onNavigate('user-dashboard')} className="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-700 transition group">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -72,7 +82,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
                 <span className="text-[9px] font-bold uppercase tracking-wide leading-none">ট্র্যাক অর্ডার</span>
               </button>
 
-              {/* Account */}
               {user ? (
                 <button onClick={() => onNavigate('user-dashboard')} className="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-700 transition">
                   <div className="w-5 h-5 bg-green-700 rounded-full flex items-center justify-center text-white text-[9px] font-black">{user.full_name?.charAt(0) || 'U'}</div>
@@ -87,7 +96,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
                 </button>
               )}
 
-              {/* Cart */}
               <button onClick={() => onNavigate('cart')} className="flex flex-col items-center gap-0.5 text-gray-500 hover:text-green-700 transition relative">
                 <div className="relative">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,7 +111,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
               {isAdmin && (
                 <button onClick={() => onNavigate('admin')} className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wide hover:bg-blue-700 transition shadow">Admin</button>
               )}
-
               {user && (
                 <button onClick={signOut} className="text-[9px] font-bold text-red-400 hover:text-red-600 uppercase tracking-wide transition">লগআউট</button>
               )}
@@ -130,6 +137,9 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
             <div className="flex rounded-full overflow-hidden border-2 border-green-700 bg-white">
               <input
                 type="text"
+                value={searchQuery}
+                onChange={e => { onSearchChange(e.target.value); if (currentPage !== 'home') onNavigate('home'); }}
+                onKeyDown={handleSearchKeyDown}
                 placeholder="পণ্য খুঁজুন..."
                 className="flex-1 px-4 py-2 text-sm outline-none text-gray-700"
               />

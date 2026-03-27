@@ -1,6 +1,6 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { Product, Order, Profile, Category } from '../types';
+import { Product, Order, Profile, Category, SitePage } from '../types';
 
 const supabaseUrl = 'https://ydyxswzzdgygqovvneab.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkeXhzd3p6ZGd5Z3FvdnZuZWFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNjAxNzIsImV4cCI6MjA4NTczNjE3Mn0.0B03RuJFMJ5xqTxGSEyjQy9klC1wSspZSikjt901Phk';
@@ -61,4 +61,24 @@ export const updateProfile = async (userId: string, updates: Partial<Profile>) =
   
   if (error) throw error;
   return data as Profile;
+};
+
+export const fetchSitePages = async (): Promise<SitePage[]> => {
+  const { data, error } = await supabase
+    .from('site_pages')
+    .select('*')
+    .order('sort_order');
+  if (error) throw error;
+  return data || [];
+};
+
+export const fetchSitePage = async (slug: string): Promise<SitePage | null> => {
+  const { data, error } = await supabase
+    .from('site_pages')
+    .select('*')
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .single();
+  if (error) return null;
+  return data;
 };

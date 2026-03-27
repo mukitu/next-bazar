@@ -79,3 +79,14 @@ export interface CartItem {
   product: Product;
   quantity: number;
 }
+
+export interface SitePage {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  page_type: 'info' | 'policy';
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
