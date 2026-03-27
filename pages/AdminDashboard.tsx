@@ -1,23 +1,38 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase, fetchProducts, fetchCategories, addCategory, deleteCategory } from '../lib/supabase';
+import { supabase, fetchProducts, fetchCategories, addCategory, deleteCategory, fetchSitePages } from '../lib/supabase';
 import { CURRENCY_SYMBOL, STATUS_COLORS, ORDER_STATUSES } from '../constants';
-import { Order, Product, Category } from '../types';
+import { Order, Product, Category, SitePage } from '../types';
 
-const AdminDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'products' | 'categories'>('overview');
+interface AdminDashboardProps {
+  onNavigatePage?: (slug: string) => void;
+}
+
+const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigatePage }) => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'products' | 'categories' | 'pages'>('overview');
   const [orders, setOrders] = useState<Order[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [sitePages, setSitePages] = useState<SitePage[]>([]);
   const [loading, setLoading] = useState(true);
   
   // Modals & Search
-  const [modalMode, setModalMode] = useState<'add-product' | 'edit-product' | 'add-category' | 'dropupseller' | 'none'>('none');
+  const [modalMode, setModalMode] = useState<'add-product' | 'edit-product' | 'add-category' | 'dropupseller' | 'add-page' | 'edit-page' | 'none'>('none');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingPage, setEditingPage] = useState<SitePage | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [newCatName, setNewCatName] = useState('');
   const [bulkPercentage, setBulkPercentage] = useState('');
   const [dropUrl, setDropUrl] = useState('');
+
+  const [pageForm, setPageForm] = useState({
+    title: '',
+    slug: '',
+    content: '',
+    page_type: 'info' as 'info' | 'policy',
+    sort_order: '0',
+    is_active: true
+  });
 
   const [formState, setFormState] = useState({
     name: '', 
@@ -36,14 +51,16 @@ const AdminDashboard: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [ords, prods, cats] = await Promise.all([
+      const [ords, prods, cats, pages] = await Promise.all([
         supabase.from('orders').select('*, profiles(email, full_name, phone), order_items(*, product:products(*))').order('created_at', { ascending: false }),
         fetchProducts(),
-        fetchCategories()
+        fetchCategories(),
+        fetchSitePages()
       ]);
       setOrders(ords.data || []);
       setProducts(prods);
       setCategories(cats);
+      setSitePages(pages);
     } catch (e) { 
       console.error("Admin Load Error:", e); 
     } finally { 
@@ -115,6 +132,54 @@ const AdminDashboard: React.FC = () => {
         alert(err.message);
       }
     }
+  };
+
+  // --- SITE PAGE HANDLERS ---
+  const handleSavePage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      title: pageForm.title,
+      slug: pageForm.slug || pageForm.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      content: pageForm.content,
+      page_type: pageForm.page_type,
+      sort_order: parseInt(pageForm.sort_order) || 0,
+      is_active: pageForm.is_active
+    };
+    let res;
+    if (modalMode === 'edit-page' && editingPage) {
+      res = await supabase.from('site_pages').update(payload).eq('id', editingPage.id);
+    } else {
+      res = await supabase.from('site_pages').insert(payload);
+    }
+    if (res.error) alert('Error: ' + res.error.message);
+    else { setModalMode('none'); loadData(); }
+  };
+
+  const handleDeletePage = async (id: string) => {
+    if (window.confirm('এই পেজটি মুছে ফেলবেন?')) {
+      const { error } = await supabase.from('site_pages').delete().eq('id', id);
+      if (error) alert(error.message);
+      else loadData();
+    }
+  };
+
+  const startEditPage = (page: SitePage) => {
+    setEditingPage(page);
+    setPageForm({
+      title: page.title,
+      slug: page.slug,
+      content: page.content,
+      page_type: page.page_type,
+      sort_order: page.sort_order.toString(),
+      is_active: page.is_active
+    });
+    setModalMode('edit-page');
+  };
+
+  const openAddPage = () => {
+    setEditingPage(null);
+    setPageForm({ title: '', slug: '', content: '', page_type: 'info', sort_order: '0', is_active: true });
+    setModalMode('add-page');
   };
 
   const handleDeleteProduct = async (id: string) => {
@@ -346,7 +411,8 @@ const AdminDashboard: React.FC = () => {
             { id: 'overview', label: 'Dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
             { id: 'orders', label: 'Orders', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z' },
             { id: 'products', label: 'Inventory', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-            { id: 'categories', label: 'Categories', icon: 'M7 7h.01M7 11h.01M7 15h.01M11 7h.01M11 11h.01M11 15h.01M15 7h.01M15 11h.01M15 15h.01' }
+            { id: 'categories', label: 'Categories', icon: 'M7 7h.01M7 11h.01M7 15h.01M11 7h.01M11 11h.01M11 15h.01M15 7h.01M15 11h.01M15 15h.01' },
+            { id: 'pages', label: 'Site Pages', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' }
           ].map(tab => (
             <button 
               key={tab.id} 
@@ -601,9 +667,191 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* SITE PAGES TAB */}
+        {activeTab === 'pages' && (
+          <div className="animate-fadeIn">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900">Site <span className="text-orange-500">Pages</span></h2>
+                <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Footer পেজ ম্যানেজমেন্ট — তথ্য ও পলিসি</p>
+              </div>
+              <button
+                onClick={openAddPage}
+                className="bg-green-700 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-green-800 transition shadow-lg"
+              >
+                + নতুন পেজ
+              </button>
+            </div>
+
+            {/* Info Pages */}
+            {['info', 'policy'].map(type => (
+              <div key={type} className="mb-10">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${type === 'info' ? 'bg-blue-500' : 'bg-orange-500'}`}></span>
+                  {type === 'info' ? 'তথ্য পেজসমূহ' : 'পলিসি পেজসমূহ'}
+                </h3>
+                <div className="space-y-3">
+                  {sitePages.filter(p => p.page_type === type).map(page => (
+                    <div key={page.id} className="bg-white rounded-2xl p-5 border border-slate-100 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition">
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className={`w-2 h-8 rounded-full flex-shrink-0 ${page.is_active ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                        <div className="min-w-0">
+                          <p className="font-black text-slate-900 text-sm truncate">{page.title}</p>
+                          <p className="text-[10px] text-slate-400 font-mono">/{page.slug}</p>
+                        </div>
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex-shrink-0 ${page.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {page.is_active ? 'Active' : 'Hidden'}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        {onNavigatePage && (
+                          <button
+                            onClick={() => onNavigatePage(page.slug)}
+                            className="p-2 text-blue-500 hover:bg-blue-50 rounded-xl transition"
+                            title="Preview"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => startEditPage(page)}
+                          className="p-2 text-orange-500 hover:bg-orange-50 rounded-xl transition"
+                          title="Edit"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeletePage(page.id)}
+                          className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition"
+                          title="Delete"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  {sitePages.filter(p => p.page_type === type).length === 0 && (
+                    <p className="text-sm text-slate-300 italic px-2">কোনো পেজ নেই</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* MODAL: PAGE EDITOR */}
+        {(modalMode === 'add-page' || modalMode === 'edit-page') && (
+          <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-xl z-[100] flex items-start justify-center p-4 overflow-y-auto">
+            <div className="bg-white w-full max-w-3xl rounded-[2rem] p-8 shadow-2xl animate-fadeIn my-8">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900">
+                    {modalMode === 'edit-page' ? 'পেজ এডিট করুন' : 'নতুন পেজ তৈরি করুন'}
+                  </h2>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-widest mt-1">Footer এর যেকোনো তথ্য বা পলিসি পেজ</p>
+                </div>
+                <button onClick={() => setModalMode('none')} className="w-10 h-10 bg-slate-100 rounded-xl font-black text-xl flex items-center justify-center hover:bg-slate-200 transition">×</button>
+              </div>
+
+              <form onSubmit={handleSavePage} className="space-y-5">
+                <div className="grid grid-cols-2 gap-5">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">পেজের নাম (বাংলায়)</label>
+                    <input
+                      required
+                      className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-semibold text-sm outline-none focus:ring-2 focus:ring-green-500/30"
+                      value={pageForm.title}
+                      onChange={e => setPageForm(f => ({
+                        ...f,
+                        title: e.target.value,
+                        slug: f.slug || e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')
+                      }))}
+                      placeholder="যেমন: রিটার্ন পলিসি"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">URL Slug</label>
+                    <input
+                      required
+                      className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-mono text-sm outline-none focus:ring-2 focus:ring-green-500/30"
+                      value={pageForm.slug}
+                      onChange={e => setPageForm(f => ({ ...f, slug: e.target.value }))}
+                      placeholder="return-policy"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-5">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">পেজ টাইপ</label>
+                    <select
+                      className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-semibold text-sm outline-none"
+                      value={pageForm.page_type}
+                      onChange={e => setPageForm(f => ({ ...f, page_type: e.target.value as 'info' | 'policy' }))}
+                    >
+                      <option value="info">তথ্য (Info)</option>
+                      <option value="policy">পলিসি (Policy)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">ক্রম (Sort Order)</label>
+                    <input
+                      type="number"
+                      className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-semibold text-sm outline-none"
+                      value={pageForm.sort_order}
+                      onChange={e => setPageForm(f => ({ ...f, sort_order: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">দৃশ্যমান</label>
+                    <select
+                      className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-semibold text-sm outline-none"
+                      value={pageForm.is_active ? 'true' : 'false'}
+                      onChange={e => setPageForm(f => ({ ...f, is_active: e.target.value === 'true' }))}
+                    >
+                      <option value="true">হ্যাঁ (Active)</option>
+                      <option value="false">না (Hidden)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">কন্টেন্ট (HTML সাপোর্টেড)</label>
+                  <textarea
+                    required
+                    rows={14}
+                    className="w-full bg-slate-50 border border-slate-200 p-4 rounded-xl font-mono text-xs outline-none focus:ring-2 focus:ring-green-500/30 resize-y"
+                    value={pageForm.content}
+                    onChange={e => setPageForm(f => ({ ...f, content: e.target.value }))}
+                    placeholder="<div>পেজের কন্টেন্ট HTML এ লিখুন...</div>"
+                  />
+                  <p className="text-[9px] text-slate-400 mt-1">💡 HTML ট্যাগ ব্যবহার করতে পারবেন: &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt; ইত্যাদি</p>
+                </div>
+
+                <div className="flex gap-4 pt-2">
+                  <button
+                    type="submit"
+                    className="flex-1 bg-green-700 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-green-800 transition shadow-lg"
+                  >
+                    {modalMode === 'edit-page' ? '✓ আপডেট করুন' : '+ পেজ তৈরি করুন'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalMode('none')}
+                    className="px-8 py-4 bg-slate-100 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-200 transition"
+                  >
+                    বাতিল
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
 };
 
 export default AdminDashboard;
+
