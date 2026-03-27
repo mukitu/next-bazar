@@ -22,7 +22,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigatePage }) => {
   const [editingPage, setEditingPage] = useState<SitePage | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [newCatName, setNewCatName] = useState('');
-  const [bulkPercentage, setBulkPercentage] = useState('');
   const [dropUrl, setDropUrl] = useState('');
 
   const [pageForm, setPageForm] = useState({
@@ -306,8 +305,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigatePage }) => {
           const payload = {
             name: item.name || item.title,
             slug: slugStr,
-            price: parseFloat(item.base_price || item.price || 0) + 150, // Added 150 to dropshipping price automatically
-            discount_price: null, // Removed separate sale value
+            price: parseFloat(item.base_price || item.price || 0), // Removed +150 increase
+            discount_price: null, 
             stock: parseInt(item.quantity || item.stock || 150),
             category_id: finalCategoryId, 
             description: item.description || item.details || "Imported Bulk Item",
@@ -341,26 +340,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigatePage }) => {
     }
   };
 
-  const handleBulkPriceIncrease = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!bulkPercentage || isNaN(Number(bulkPercentage))) return;
-    const confirm = window.confirm(`Are you sure you want to increase prices of ALL products by ${bulkPercentage}%?`);
-    if (!confirm) return;
-
-    try {
-      // Trying Supabase RPC which we will provide via SQL for the user
-      const { error } = await supabase.rpc('bulk_increase_price', { percentage: parseFloat(bulkPercentage) });
-      if (error) {
-        alert("SQL Error: " + error.message + "\n\nPlease ensure you have run the required SQL query in Supabase SQL editor to create the `bulk_increase_price` function.");
-      } else {
-        alert(`Successfully increased all prices by ${bulkPercentage}%!`);
-        setBulkPercentage('');
-        loadData();
-      }
-    } catch (err: any) {
-      alert("Error updating prices: " + err.message);
-    }
-  };
 
 
 
@@ -438,10 +417,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigatePage }) => {
             {activeTab === 'products' && (
               <>
                 <button onClick={handleBulkFetchDropUpSeller} className="bg-slate-900 text-white px-6 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 shadow-sm transition-all border border-slate-700">Sync Inventory (API)</button>
-                <div className="flex items-center gap-2 bg-slate-100 p-2 rounded-2xl">
-                   <input type="number" placeholder="Bulk % Increase" className="w-32 bg-white px-3 py-2 rounded-xl text-xs font-black outline-none border border-slate-200" value={bulkPercentage} onChange={e => setBulkPercentage(e.target.value)} />
-                   <button onClick={handleBulkPriceIncrease} className="bg-slate-900 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all">Apply</button>
-                </div>
                 <button onClick={() => { setFormState({ name: '', price: '', discount_price: '', stock: '', category_id: '', description: '', image_url: '', is_featured: false, is_flash_sale: false, rating: '5', review_count: '0' }); setModalMode('add-product'); setEditingProduct(null); }} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-orange-600 shadow-xl transition-all">Launch Product</button>
               </>
             )}
@@ -538,7 +513,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigatePage }) => {
                 </div>
                 <h3 className="font-black uppercase text-xs italic mb-2 truncate text-slate-900">{p.name}</h3>
                 <div className="mt-auto flex justify-between items-center pt-6 border-t border-slate-50">
-                  <span className="text-slate-900 font-black text-xl italic">{CURRENCY_SYMBOL}{p.discount_price || p.price}</span>
+                  {(() => {
+                    const hasDiscount = p.discount_price && p.discount_price < p.price;
+                    return (
+                      <span className="text-slate-900 font-black text-xl italic">
+                        {CURRENCY_SYMBOL}{hasDiscount ? p.discount_price : p.price}
+                      </span>
+                    );
+                  })()}
                   <div className="flex gap-2">
                     <button onClick={() => handleDeleteProduct(p.id)} className="bg-red-50 text-red-500 px-4 py-3 rounded-xl hover:bg-red-100 transition-all active:scale-95 shadow-sm">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>

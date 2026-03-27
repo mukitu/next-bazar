@@ -49,12 +49,16 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
       if (orderError) throw orderError;
 
       // 2. Insert Order Items
-      const orderItems = cart.map(item => ({
-        order_id: order.id,
-        product_id: item.product.id,
-        quantity: item.quantity,
-        price_at_time: item.product.discount_price ?? item.product.price
-      }));
+      const orderItems = cart.map(item => {
+        const hasDiscount = item.product.discount_price && item.product.discount_price < item.product.price;
+        const priceAtTime = hasDiscount ? item.product.discount_price as number : item.product.price;
+        return {
+          order_id: order.id,
+          product_id: item.product.id,
+          quantity: item.quantity,
+          price_at_time: priceAtTime
+        };
+      });
 
       const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
       if (itemsError) throw itemsError;
@@ -176,11 +180,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl sticky top-24 border border-slate-800">
-            <h2 className="text-xl font-black mb-8 uppercase tracking-tighter border-b border-slate-800 pb-6 italic">চেকআউট <span className="text-orange-500">বিল</span></h2>
             <div className="space-y-4 mb-10 text-[10px] font-black uppercase tracking-widest">
-              <div className="flex justify-between text-slate-500"><span>পণ্যের উপমোট</span><span className="text-white">{CURRENCY_SYMBOL}{base}</span></div>
-              <div className="flex justify-between text-slate-500"><span>শিপিং চার্জ ({region === 'DHAKA' ? 'ঢাকা' : 'ঢাকার বাইরে'})</span><span className="text-white">{CURRENCY_SYMBOL}{shipping}</span></div>
-              <div className="flex justify-between text-slate-500"><span>{paymentMethod} চার্জ</span><span className="text-white">{CURRENCY_SYMBOL}{paymentCharge}</span></div>
               <div className="flex justify-between font-black text-3xl pt-8 border-t border-slate-800 mt-6 tracking-tighter text-orange-500">
                 <span>সর্বমোট (Total)</span>
                 <span>{CURRENCY_SYMBOL}{total}</span>

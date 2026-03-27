@@ -31,25 +31,28 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-6">
-          {cart.map(item => (
-            <div key={item.product.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 flex gap-6 items-center shadow-sm transition hover:shadow-md">
-              <img src={item.product.images[0]} className="w-24 h-24 object-cover rounded-2xl border bg-slate-50" alt="" />
-              <div className="flex-1">
-                <h3 className="font-black text-slate-900 uppercase tracking-tighter text-sm italic">{item.product.name}</h3>
-                <p className="text-orange-600 font-black text-lg mt-1">
-                  {CURRENCY_SYMBOL}{item.product.discount_price ?? item.product.price}
-                </p>
+          {cart.map(item => {
+            const hasDiscount = item.product.discount_price && item.product.discount_price < item.product.price;
+            return (
+              <div key={item.product.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 flex gap-6 items-center shadow-sm transition hover:shadow-md">
+                <img src={item.product.images[0]} className="w-24 h-24 object-cover rounded-2xl border bg-slate-50" alt="" />
+                <div className="flex-1">
+                  <h3 className="font-black text-slate-900 uppercase tracking-tighter text-sm italic">{item.product.name}</h3>
+                  <p className="text-orange-600 font-black text-lg mt-1">
+                    {CURRENCY_SYMBOL}{hasDiscount ? item.product.discount_price : item.product.price}
+                  </p>
+                </div>
+                <div className="flex items-center bg-slate-50 rounded-xl overflow-hidden border">
+                  <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="px-4 py-2 hover:bg-white transition text-slate-400 font-black">-</button>
+                  <span className="px-4 py-2 text-xs font-black text-slate-900 border-x">{item.quantity}</span>
+                  <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="px-4 py-2 hover:bg-white transition text-slate-400 font-black">+</button>
+                </div>
+                <button onClick={() => removeFromCart(item.product.id)} className="text-slate-300 hover:text-red-500 transition-colors p-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
               </div>
-              <div className="flex items-center bg-slate-50 rounded-xl overflow-hidden border">
-                <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="px-4 py-2 hover:bg-white transition text-slate-400 font-black">-</button>
-                <span className="px-4 py-2 text-xs font-black text-slate-900 border-x">{item.quantity}</span>
-                <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="px-4 py-2 hover:bg-white transition text-slate-400 font-black">+</button>
-              </div>
-              <button onClick={() => removeFromCart(item.product.id)} className="text-slate-300 hover:text-red-500 transition-colors p-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="lg:col-span-1">
@@ -57,13 +60,8 @@ const CartPage: React.FC<CartPageProps> = ({ onCheckout, onShop }) => {
             <h2 className="text-xl font-black mb-8 uppercase tracking-tighter italic">অর্ডার <span className="text-orange-500">সংক্ষিপ্ত (Summary)</span></h2>
             
             <div className="space-y-4 mb-10 text-[10px] font-black uppercase tracking-widest">
-              <div className="flex justify-between text-slate-400">
-                <span>পণ্যের উপমোট</span>
-                <span className="text-slate-900">{CURRENCY_SYMBOL}{subtotal}</span>
-              </div>
-              <p className="text-[9px] text-slate-400 font-bold uppercase mt-4">* শিপিং এবং অন্যান্য চার্জ চেকআউটে হিসাব করা হবে</p>
               <div className="border-t border-slate-50 pt-6 flex justify-between text-2xl font-black tracking-tighter">
-                <span>উপমোট (Subtotal)</span>
+                <span>সর্বমোট (Total)</span>
                 <span className="text-orange-600">{CURRENCY_SYMBOL}{subtotal}</span>
               </div>
             </div>
