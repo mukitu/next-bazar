@@ -132,8 +132,45 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleImportCategories = async () => {
+    const confirm = window.confirm("Fetch and import all categories from DropUPSeller API?");
+    if (!confirm) return;
+
+    setLoading(true);
+    try {
+      const targetUrl = "https://dropupseller.com/api/apps/categories";
+      const res = await fetch(targetUrl, { method: 'GET' });
+      if (!res.ok) throw new Error(`Status: ${res.status}`);
+      
+      const responseBody = await res.json();
+      const items = Array.isArray(responseBody) ? responseBody : responseBody.data;
+
+      if (!Array.isArray(items)) throw new Error("Invalid categories response array.");
+
+      let count = 0;
+      const existingNames = categories.map(c => c.name.toLowerCase());
+
+      for (const item of items) {
+        if (!item.name) continue;
+        const c_name = item.name.trim();
+        if (!existingNames.includes(c_name.toLowerCase())) {
+          const catSlug = c_name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+          await supabase.from('categories').insert({ name: c_name, slug: catSlug });
+          existingNames.push(c_name.toLowerCase());
+          count++;
+        }
+      }
+      alert(`Successfully imported ${count} new categories!`);
+      loadData();
+    } catch (err: any) {
+      alert("Error fetching categories: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleBulkFetchDropUpSeller = async () => {
-    const confirm = window.confirm("Do you want to fetch and import ALL products & categories from DropUPSeller API? (This may take a minute)");
+    const confirm = window.confirm("Do you want to fetch and import ALL products & categories from DropUPSeller API? (This may take a few minutes)");
     if (!confirm) return;
   
     setLoading(true);
@@ -141,81 +178,95 @@ const AdminDashboard: React.FC = () => {
       const apiKey = "MLFHFe8JDWNNThvJxL4heD8RD";
       const apiSecret = "HT5zuPmg9bBqI5BKN2kmYvr4Qvl7YIi3EyW7SvtfNabMz";
       
-      // Fetch 100 products at once (adjustable)
-      const targetUrl = "https://dropupseller.com/api/dropshop/products?per_page=100";
-  
-      const res = await fetch(targetUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': apiKey,
-          'X-API-Secret': apiSecret
-        }
-      });
-  
-      if (!res.ok) throw new Error(`Status: ${res.status}`);
-  
-      const responseBody = await res.json();
-      const items = Array.isArray(responseBody) ? responseBody : responseBody.data;
-  
-      if (!Array.isArray(items)) throw new Error("Invalid JSON items structure.");
-  
       let prodCount = 0;
       let catCount = 0;
       const existingCategories = [...categories];
+      
+      let page = 1;
+      let hasMore = true;
 
-      for (const item of items) {
-        if (!item.name && !item.title) continue;
-
-        let finalCategoryId = null;
-
-        // Try to handle categories attached to the product
-        const apiCategories = item.categories || [];
-        if (apiCategories.length > 0) {
-            const apiCatName = apiCategories[0].name;
-            const existingCat = existingCategories.find(c => c.name.toLowerCase() === apiCatName.toLowerCase());
-            
-            if (existingCat) {
-                finalCategoryId = existingCat.id;
-            } else {
-                // Category doesn't exist, so create it first
-                const catSlug = apiCatName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-                const catRes = await supabase.from('categories').insert({ name: apiCatName, slug: catSlug }).select().single();
-                
-                if (catRes.data) {
-                    finalCategoryId = catRes.data.id;
-                    existingCategories.push(catRes.data);
-                    catCount++;
-                }
-            }
-        } else {
-            // Fallback to the first existing category if none supplied
-            finalCategoryId = existingCategories.length > 0 ? existingCategories[0].id : null;
+      while (hasMore) {
+        // Fetch 100 products per page until exhaust
+        const targetUrl = `https://dropupseller.com/api/dropshop/products?per_page=100&page=${page}`;
+    
+        const res = await fetch(targetUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': apiKey,
+            'X-API-Secret': apiSecret
+          }
+        });
+    
+        if (!res.ok) throw new Error(`Status: ${res.status}`);
+    
+        const responseBody = await res.json();
+        const items = Array.isArray(responseBody) ? responseBody : responseBody.data;
+    
+        if (!Array.isArray(items) || items.length === 0) {
+           break; // No more data
         }
 
-        const slugStr = `${(item.name || item.title).toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}-${prodCount}`;
+        for (const item of items) {
+          if (!item.name && !item.title) continue;
+
+          let finalCategoryId = null;
+
+          // Try to handle categories attached to the product
+          const apiCategories = item.categories || [];
+          if (apiCategories.length > 0) {
+              const apiCatName = apiCategories[0].name;
+              const existingCat = existingCategories.find(c => c.name.toLowerCase() === apiCatName.toLowerCase());
+              
+              if (existingCat) {
+                  finalCategoryId = existingCat.id;
+              } else {
+                  // Category doesn't exist, so create it first
+                  const catSlug = apiCatName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                  const catRes = await supabase.from('categories').insert({ name: apiCatName, slug: catSlug }).select().single();
+                  
+                  if (catRes.data) {
+                      finalCategoryId = catRes.data.id;
+                      existingCategories.push(catRes.data);
+                      catCount++;
+                  }
+              }
+          } else {
+              // Fallback to the first existing category if none supplied
+              finalCategoryId = existingCategories.length > 0 ? existingCategories[0].id : null;
+          }
+
+          const slugStr = `${(item.name || item.title).toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now()}-${prodCount}`;
+          
+          const payload = {
+            name: item.name || item.title,
+            slug: slugStr,
+            price: parseFloat(item.base_price || item.price || 0) + 150, // Added 150 to dropshipping price automatically
+            discount_price: null, // Removed separate sale value
+            stock: parseInt(item.quantity || item.stock || 150),
+            category_id: finalCategoryId, 
+            description: item.description || item.details || "Imported Bulk Item",
+            images: [item.main_image || item.image || (item.images && item.images[0]?.image) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b'],
+            is_featured: false,
+            is_flash_sale: false,
+            rating: 5,
+            review_count: 0,
+            sku: item.sku || ('DP-B-' + Math.random().toString(36).substr(2, 7).toUpperCase())
+          };
+          
+          const { error } = await supabase.from('products').insert(payload);
+          if (!error) prodCount++;
+        }
         
-        const payload = {
-          name: item.name || item.title,
-          slug: slugStr,
-          price: parseFloat(item.base_price || item.price || 0) + 150, // Added 150 to dropshipping price automatically
-          discount_price: null, // Removed separate sale value
-          stock: parseInt(item.quantity || item.stock || 150),
-          category_id: finalCategoryId, 
-          description: item.description || item.details || "Imported Bulk Item",
-          images: [item.main_image || item.image || (item.images && item.images[0]?.image) || 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b'],
-          is_featured: false,
-          is_flash_sale: false,
-          rating: 5,
-          review_count: 0,
-          sku: item.sku || ('DP-B-' + Math.random().toString(36).substr(2, 7).toUpperCase())
-        };
-        
-        const { error } = await supabase.from('products').insert(payload);
-        if (!error) prodCount++;
+        if (responseBody.pagination && responseBody.pagination.last_page) {
+         hasMore = page < responseBody.pagination.last_page;
+      } else {
+         hasMore = items.length === 100;
       }
+      page++;
+    }
   
-      alert(`Bulk Sync Completed!\nSuccessfully imported ${prodCount} products and created ${catCount} new categories.`);
+    alert(`Bulk Sync Completed!\nSuccessfully imported ${prodCount} total products and created ${catCount} new categories across all pages.`);
       loadData();
   
     } catch (err: any) {
@@ -508,7 +559,10 @@ const AdminDashboard: React.FC = () => {
 
         {/* CATEGORIES TAB (Full Management) */}
         {activeTab === 'categories' && (
-          <div className="max-w-4xl animate-fadeIn">
+          <div className="max-w-4xl animate-fadeIn space-y-8">
+            <button onClick={handleImportCategories} className="w-full bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-orange-600 transition-all shadow-2xl active:scale-95 italic">
+               SYNC ALL CATEGORIES (API)
+            </button>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {categories.map(cat => (
                 <div key={cat.id} className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:shadow-lg transition-all">
