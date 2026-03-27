@@ -189,27 +189,7 @@ const AdminDashboard: React.FC = () => {
       loadData();
   
     } catch (err: any) {
-      alert("Bulk API Sync Failed / CORS block: " + err.message + "\n\nApplying Fallback: Simulating Bulk Import of 3 items for preview...");
-      
-      const mockItems = [
-        { name: "Imported DropUp Trend Jacket", price: 1200, category_id: categories[0]?.id || null },
-        { name: "Imported Premium Gadget", price: 2500, category_id: categories[0]?.id || null },
-        { name: "DropUPSeller Fashion Wear", price: 850, category_id: categories[0]?.id || null }
-      ];
-      
-      for (let i=0; i<mockItems.length; i++) {
-        await supabase.from('products').insert({
-          ...mockItems[i],
-          slug: `simulated-item-${Date.now()}-${i}`,
-          stock: 50,
-          description: "This is a simulated bulk import product due to API failure.",
-          images: ['https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800'],
-          sku: 'DP-B-' + Date.now() + i,
-          rating: 4.5, review_count: 10
-        });
-      }
-      alert("Simulation imported 3 products!");
-      loadData();
+      alert("API Connection Error: " + err.message + "\n\nদুঃখিত! সঠিকভাবে API Endpoint URL না পাওয়ায় এবং CORS ব্লক থাকার কারণে ডাটা ফেচ করা যাচ্ছে না। দয়া করে DropUpSeller এর সাপোর্ট থেকে সঠিক 'Product Fetch API Base URL' সংগ্রহ করে দিন।");
     }
   };
 
@@ -282,22 +262,7 @@ const AdminDashboard: React.FC = () => {
       });
       
     } catch (err: any) {
-      alert("API Integration Pending / Error: " + err.message + "\n\n(Note: Browsers often block frontend-only API requests (CORS error) or the URL provided isn't a strict API json endpoint.)\n\nFallback simulated data triggered so you can still preview the feature.");
-      
-      // Simulating a successful mapping for UX if actual endpoint fails
-      setFormState({
-         name: 'Imported DropUPSeller Product (Simulation)',
-         price: '500',
-         discount_price: '450',
-         stock: '150',
-         category_id: categories.length > 0 ? categories[0].id : '',
-         description: 'Premium quality product testing. Original Source URL: ' + dropUrl,
-         image_url: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80&w=800',
-         is_featured: false,
-         is_flash_sale: false,
-         rating: '5',
-         review_count: '0'
-      });
+      alert("API Error / CORS Issue: " + err.message + "\n\nদুঃখিত, সঠিক API Link ছাড়া সরাসরি ডাটা ইমপোর্ট করা সম্ভব হচ্ছে না।");
     }
 
     setDropUrl('');
