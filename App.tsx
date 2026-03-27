@@ -150,29 +150,90 @@ const MainContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {currentPage !== 'admin' && <Navbar onNavigate={navigate} currentPage={currentPage} />}
       <main className="flex-1">
         {renderPage()}
       </main>
       {currentPage !== 'admin' && (
-        <footer className="bg-slate-900 text-white py-16 px-6 pb-28 md:pb-16 mt-20">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-10">
-            <div className="flex flex-col -space-y-1 items-center md:items-start">
-              <span className="text-2xl font-black tracking-tighter uppercase italic">Next<span className="text-orange-500">Bazar</span></span>
-              <span className="text-[10px] font-bold text-slate-500 tracking-[0.2em] uppercase">Premium BD E-Commerce</span>
+        <footer className="bg-gray-900 text-gray-300 pt-16 pb-28 md:pb-0 mt-12">
+          {/* Main Footer Columns */}
+          <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-5 gap-10 pb-12 border-b border-gray-700">
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-1">
+              <div className="mb-4">
+                <span className="text-2xl font-black text-white uppercase tracking-tight">NEXT<span className="text-orange-500">BAZAR</span></span>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Premium E-Commerce</p>
+              </div>
+              <p className="text-xs text-gray-400 leading-relaxed mb-4">বিশ্বস্ত অনলাইন শপিং প্ল্যাটফর্ম। সেরা মানের পণ্য, দ্রুত ডেলিভারি।</p>
+              <div className="space-y-2 text-xs text-gray-400">
+                <p className="flex items-center gap-2">📍 ঢাকা, বাংলাদেশ</p>
+                <p className="flex items-center gap-2">📞 01700-000000</p>
+                <p className="flex items-center gap-2">✉️ support@nextbazar.com</p>
+              </div>
+              <div className="flex gap-3 mt-5">
+                <a href="#" className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold hover:bg-blue-700 transition">f</a>
+                <a href="#" className="w-8 h-8 bg-sky-500 rounded-full flex items-center justify-center text-white text-xs font-bold hover:bg-sky-600 transition">t</a>
+                <a href="#" className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white text-xs font-bold hover:opacity-90 transition">in</a>
+              </div>
             </div>
-            <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-slate-400">
-              <span onClick={() => navigate('home')} className="hover:text-orange-500 cursor-pointer transition">Store</span>
-              <span onClick={() => navigate('user-dashboard')} className="hover:text-orange-500 cursor-pointer transition">Track My Orders</span>
-              <span className="hover:text-orange-500 cursor-pointer transition">Privacy Policy</span>
+
+            {/* Information */}
+            <div>
+              <h4 className="text-white font-black text-xs uppercase tracking-widest mb-5 border-b border-gray-700 pb-3">তথ্য</h4>
+              <ul className="space-y-2.5 text-xs text-gray-400">
+                {['আমাদের সম্পর্কে', 'যোগাযোগ', 'শর্তাবলী', 'গোপনীয়তা নীতি', 'ক্যারিয়ার'].map(item => (
+                  <li key={item}><a href="#" className="hover:text-orange-400 transition">{item}</a></li>
+                ))}
+              </ul>
             </div>
-            <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">© 2026 NEXTBAZAR</p>
+
+            {/* Shop By */}
+            <div>
+              <h4 className="text-white font-black text-xs uppercase tracking-widest mb-5 border-b border-gray-700 pb-3">কেনাকাটা</h4>
+              <ul className="space-y-2.5 text-xs text-gray-400">
+                {['নতুন পণ্য', 'ফ্ল্যাশ সেল', 'বিশেষ অফার', 'ফিচার্ড পণ্য', 'সব পণ্য'].map(item => (
+                  <li key={item}><a href="#" className="hover:text-orange-400 transition">{item}</a></li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h4 className="text-white font-black text-xs uppercase tracking-widest mb-5 border-b border-gray-700 pb-3">সাপোর্ট</h4>
+              <ul className="space-y-2.5 text-xs text-gray-400">
+                {['সাপোর্ট সেন্টার', 'কিভাবে অর্ডার করবেন', 'অর্ডার ট্র্যাকিং', 'পেমেন্ট', 'শিপিং', 'FAQ'].map(item => (
+                  <li key={item}><a href="#" className="hover:text-orange-400 transition">{item}</a></li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Policy */}
+            <div>
+              <h4 className="text-white font-black text-xs uppercase tracking-widest mb-5 border-b border-gray-700 pb-3">পলিসি</h4>
+              <ul className="space-y-2.5 text-xs text-gray-400">
+                {['রিটার্ন পলিসি', 'রিফান্ড পলিসি', 'এক্সচেঞ্জ', 'বাতিল করুন', 'এক্সট্রা ডিসকাউন্ট'].map(item => (
+                  <li key={item}><a href="#" className="hover:text-orange-400 transition">{item}</a></li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Payment Methods + Copyright */}
+          <div className="max-w-7xl mx-auto px-6 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-[11px] text-gray-500">© ২০২৬ NextBazar. সমস্ত অধিকার সংরক্ষিত।</p>
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              <span className="text-[10px] text-gray-500 font-semibold mr-1">পেমেন্ট করুন:</span>
+              {['VISA', 'MasterCard', 'bKash', 'Nagad', 'Rocket', 'COD'].map(method => (
+                <span key={method} className="bg-gray-700 text-gray-300 text-[9px] font-bold px-2.5 py-1 rounded border border-gray-600">{method}</span>
+              ))}
+            </div>
           </div>
         </footer>
       )}
     </div>
   );
+
 };
 
 const App: React.FC = () => (
