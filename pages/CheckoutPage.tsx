@@ -9,7 +9,7 @@ interface CheckoutPageProps {
 }
 
 const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
-  const { cart, getTotals, clearCart } = useCart();
+  const { cart, getTotals, clearCart, removeFromCart } = useCart();
   const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BKASH'>('COD');
   const [region, setRegion] = useState<'DHAKA' | 'OUTSIDE'>('DHAKA');
@@ -179,8 +179,53 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({ onComplete }) => {
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
+          <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-8">
+            <h2 className="text-sm font-black mb-6 uppercase tracking-widest text-slate-400 italic">অর্ডার আইটেম ({cart.length})</h2>
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide">
+              {cart.map(item => {
+                const hasDiscount = item.product.discount_price && item.product.discount_price < item.product.price;
+                const price = hasDiscount ? item.product.discount_price : item.product.price;
+                return (
+                  <div key={item.product.id} className="flex gap-4 items-center bg-slate-50 p-3 rounded-2xl border border-slate-100 group">
+                    <img src={item.product.images[0]} className="w-12 h-12 object-cover rounded-xl border bg-white" alt="" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-black text-slate-900 truncate uppercase">{item.product.name}</p>
+                      <p className="text-[10px] font-bold text-orange-600 uppercase tracking-tighter">
+                        {item.quantity} × {CURRENCY_SYMBOL}{price}
+                      </p>
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={() => removeFromCart(item.product.id)}
+                      className="text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 p-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </div>
+                );
+              })}
+              {cart.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest italic">কার্ট খালি</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="bg-slate-900 text-white p-8 rounded-[2.5rem] shadow-2xl sticky top-24 border border-slate-800">
             <div className="space-y-4 mb-10 text-[10px] font-black uppercase tracking-widest">
+              <div className="flex justify-between text-slate-500">
+                <span>পণ্যের উপমোট</span>
+                <span className="text-white">{CURRENCY_SYMBOL}{base}</span>
+              </div>
+              <div className="flex justify-between text-slate-500">
+                <span>শিপিং চার্জ ({region === 'DHAKA' ? 'ঢাকা' : 'ঢাকার বাইরে'})</span>
+                <span className="text-white">{CURRENCY_SYMBOL}{shipping}</span>
+              </div>
+              <div className="flex justify-between text-slate-500">
+                <span>পেমেন্ট চার্জ ({paymentMethod})</span>
+                <span className="text-white">{CURRENCY_SYMBOL}{paymentCharge}</span>
+              </div>
               <div className="flex justify-between font-black text-3xl pt-8 border-t border-slate-800 mt-6 tracking-tighter text-orange-500">
                 <span>সর্বমোট (Total)</span>
                 <span>{CURRENCY_SYMBOL}{total}</span>
