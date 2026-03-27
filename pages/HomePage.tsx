@@ -10,17 +10,31 @@ interface HomePageProps {
   onProductClick: (product: Product) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  selectedCategory: string | null;
+  onCategoryChange: (catId: string | null) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQuery, onSearchChange }) => {
+const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQuery, onSearchChange, selectedCategory, onCategoryChange }) => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   useEffect(() => {
     fetchCategories().then(setCategories);
   }, []);
+
+  // Scroll to category when prop changes (from Navbar)
+  useEffect(() => {
+    if (selectedCategory) {
+      const el = sectionRefs.current[selectedCategory];
+      if (el) {
+        // Delay slightly to ensure content is rendered
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    }
+  }, [selectedCategory]);
 
   const featuredProducts = products.filter(p => p.is_featured);
 
@@ -46,7 +60,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
   const uncategorised = products.filter(p => !p.category_id || !categories.find(c => c.id === p.category_id));
 
   const scrollToCategory = (catId: string) => {
-    setSelectedCategory(catId);
+    onCategoryChange(catId);
     const el = sectionRefs.current[catId];
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };

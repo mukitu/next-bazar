@@ -88,7 +88,6 @@ const Login: React.FC<LoginProps> = ({ onAuthSuccess }) => {
             <span className="text-4xl font-black text-slate-900 tracking-tighter uppercase italic">
               মুকি<span className="text-orange-500">ত</span>
             </span>
-            <span className="text-[10px] font-black tracking-[0.4em] text-slate-300 uppercase">Premium Shopping</span>
           </div>
           <h2 className="text-2xl font-black text-slate-900 uppercase italic tracking-tighter">
             {isRegistering ? 'Identity Setup' : 'Welcome Back'}

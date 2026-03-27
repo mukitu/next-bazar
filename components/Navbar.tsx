@@ -8,12 +8,13 @@ import { Category } from '../types';
 interface NavbarProps {
   onNavigate: (page: string) => void;
   onNavigatePage: (slug: string) => void;
+  onCategoryClick: (catId: string) => void;
   currentPage: string;
   searchQuery: string;
   onSearchChange: (q: string) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, currentPage, searchQuery, onSearchChange }) => {
+const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, onCategoryClick, currentPage, searchQuery, onSearchChange }) => {
   const { cart } = useCart();
   const { user, isAdmin, signOut } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -47,7 +48,6 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, currentPage
                 <span className="text-xl md:text-2xl font-black text-green-700 tracking-tight uppercase">
                   মুকি<span className="text-orange-500">ত</span>
                 </span>
-                <span className="text-[8px] font-bold text-gray-400 tracking-widest uppercase">Premium E-Commerce</span>
               </div>
             </div>
 
@@ -165,7 +165,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, onNavigatePage, currentPage
               {categories.slice(0, 10).map(cat => (
                 <button
                   key={cat.id}
-                  onClick={() => onNavigate('home')}
+                  onClick={() => { onCategoryClick(cat.id); onNavigate('home'); }}
                   className="flex-shrink-0 px-4 py-2.5 text-green-100 text-[11px] font-semibold hover:bg-green-700 hover:text-white transition whitespace-nowrap"
                 >
                   {cat.name}

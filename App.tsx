@@ -24,6 +24,7 @@ const MainContent: React.FC = () => {
   const [currentPageSlug, setCurrentPageSlug] = useState('');
   const { user, isAdmin, loading: authLoading } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
   const loadInitialData = useCallback(async () => {
     setProductsLoading(true);
@@ -83,6 +84,7 @@ const MainContent: React.FC = () => {
     window.location.hash = page;
     window.scrollTo({ top: 0, behavior: 'instant' });
     setGlobalSearch(''); // clear search on navigation
+    setActiveCategoryId(null); // clear category on navigation
   };
 
   const navigateToPage = (slug: string) => {
@@ -143,25 +145,25 @@ const MainContent: React.FC = () => {
             </div>
           );
         }
-        return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
-      case 'product': return selectedProduct ? <ProductPage product={selectedProduct} /> : <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
+        return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} selectedCategory={activeCategoryId} onCategoryChange={setActiveCategoryId} />;
+      case 'product': return selectedProduct ? <ProductPage product={selectedProduct} /> : <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} selectedCategory={activeCategoryId} onCategoryChange={setActiveCategoryId} />;
       case 'cart': return <CartPage onCheckout={() => navigate('checkout')} onShop={() => navigate('home')} />;
       case 'checkout': return <CheckoutPage onComplete={() => navigate('user-dashboard')} />;
       case 'admin': 
         if (isAdmin) return <AdminDashboard onNavigatePage={navigateToPage} />;
-        return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
+        return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} selectedCategory={activeCategoryId} onCategoryChange={setActiveCategoryId} />;
       case 'user-dashboard': 
       case 'orders': 
         return user ? <UserDashboard /> : <Login onAuthSuccess={() => navigate('user-dashboard')} />;
       case 'login': return <Login onAuthSuccess={() => navigate('home')} />;
-      case 'page': return currentPageSlug ? <SitePageView slug={currentPageSlug} onBack={() => navigate('home')} /> : <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
-      default: return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />;
+      case 'page': return currentPageSlug ? <SitePageView slug={currentPageSlug} onBack={() => navigate('home')} /> : <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} selectedCategory={activeCategoryId} onCategoryChange={setActiveCategoryId} />;
+      default: return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} selectedCategory={activeCategoryId} onCategoryChange={setActiveCategoryId} />;
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {currentPage !== 'admin' && <Navbar onNavigate={navigate} onNavigatePage={navigateToPage} currentPage={currentPage} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />}
+      {currentPage !== 'admin' && <Navbar onNavigate={navigate} onNavigatePage={navigateToPage} onCategoryClick={setActiveCategoryId} currentPage={currentPage} searchQuery={globalSearch} onSearchChange={setGlobalSearch} />}
       <main className="flex-1">
         {renderPage()}
       </main>
@@ -173,7 +175,6 @@ const MainContent: React.FC = () => {
             <div className="col-span-2 md:col-span-1">
               <div className="mb-4">
                 <span className="text-2xl font-black text-white uppercase tracking-tight">মুকি<span className="text-orange-500">ত</span></span>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Premium E-Commerce</p>
               </div>
               <p className="text-xs text-gray-400 leading-relaxed mb-4">বিশ্বস্ত অনলাইন শপিং প্ল্যাটফর্ম। সেরা মানের পণ্য, দ্রুত ডেলিভারি।</p>
               <div className="space-y-2 text-xs text-gray-400">

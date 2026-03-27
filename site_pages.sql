@@ -18,6 +18,10 @@ CREATE TABLE IF NOT EXISTS site_pages (
 -- Enable Row Level Security
 ALTER TABLE site_pages ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (to allow re-running the script)
+DROP POLICY IF EXISTS "Anyone can read active pages" ON site_pages;
+DROP POLICY IF EXISTS "Admins can manage pages" ON site_pages;
+
 -- Public can read active pages
 CREATE POLICY "Anyone can read active pages"
   ON site_pages FOR SELECT
@@ -143,4 +147,4 @@ INSERT INTO site_pages (slug, title, content, page_type, sort_order) VALUES
 </div>
 <p style="margin-top: 16px;">বিস্তারিত জানতে: 01700-000000</p>
 </div>', 'policy', 5)
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE SET title = EXCLUDED.title, content = EXCLUDED.content;
