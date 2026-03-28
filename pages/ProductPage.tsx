@@ -6,9 +6,10 @@ import { useCart } from '../context/CartContext';
 
 interface ProductPageProps {
   product: Product;
+  onNavigate?: (page: string) => void;
 }
 
-const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
+const ProductPage: React.FC<ProductPageProps> = ({ product, onNavigate }) => {
   const [activeImage, setActiveImage] = useState(product.images[0]);
   const [qty, setQty] = useState(1);
   const { addToCart } = useCart();
@@ -128,7 +129,12 @@ const ProductPage: React.FC<ProductPageProps> = ({ product }) => {
             <button 
               onClick={() => {
                 addToCart(product, qty);
-                window.location.hash = 'checkout';
+                if (onNavigate) {
+                   onNavigate('checkout');
+                 } else {
+                   window.history.pushState(null, '', '/checkout');
+                   window.dispatchEvent(new PopStateEvent('popstate'));
+                 }
               }}
               disabled={product.stock <= 0}
               className="flex-1 bg-slate-900 text-white py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.3em] hover:bg-orange-600 transition-all shadow-2xl active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed"

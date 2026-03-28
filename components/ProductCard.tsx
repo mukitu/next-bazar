@@ -7,9 +7,10 @@ import { useCart } from '../context/CartContext';
 interface ProductCardProps {
   product: Product;
   onClick: (product: Product) => void;
+  onNavigate?: (page: string) => void;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onClick, onNavigate }) => {
   const { addToCart } = useCart();
   const hasDiscount = product.discount_price && product.discount_price < product.price;
 
@@ -79,7 +80,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onClick }) => {
                onClick={(e) => { 
                  e.stopPropagation(); 
                  addToCart(product, 1);
-                 window.location.hash = 'checkout';
+                 if (onNavigate) {
+                   onNavigate('checkout');
+                 } else {
+                   window.history.pushState(null, '', '/checkout');
+                   window.dispatchEvent(new PopStateEvent('popstate'));
+                 }
                }}
                className="flex-1 py-2.5 rounded-xl text-[9px] font-black transition-all active:scale-95 uppercase tracking-widest bg-slate-900 text-white hover:bg-orange-600 shadow-md shadow-slate-100"
              >

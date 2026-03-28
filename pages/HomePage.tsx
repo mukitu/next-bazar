@@ -8,13 +8,14 @@ import { CURRENCY_SYMBOL } from '../constants';
 interface HomePageProps {
   products: Product[];
   onProductClick: (product: Product) => void;
+  onNavigate: (page: string) => void;
   searchQuery: string;
   onSearchChange: (q: string) => void;
   selectedCategory: string | null;
   onCategoryChange: (catId: string | null) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQuery, onSearchChange, selectedCategory, onCategoryChange }) => {
+const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, onNavigate, searchQuery, onSearchChange, selectedCategory, onCategoryChange }) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
@@ -221,7 +222,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 md:gap-8">
                   {catProducts.map(p => (
-                    <ProductCard key={p.id} product={p} onClick={onProductClick} />
+                    <ProductCard key={p.id} product={p} onClick={onProductClick} onNavigate={onNavigate} />
                   ))}
                 </div>
               </section>
@@ -240,7 +241,7 @@ const HomePage: React.FC<HomePageProps> = ({ products, onProductClick, searchQue
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 md:gap-8">
                 {uncategorised.map(p => (
-                  <ProductCard key={p.id} product={p} onClick={onProductClick} />
+                  <ProductCard key={p.id} product={p} onClick={onProductClick} onNavigate={onNavigate} />
                 ))}
               </div>
             </section>

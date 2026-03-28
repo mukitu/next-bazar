@@ -59,15 +59,16 @@ const MainContent: React.FC = () => {
       setShowSplash(false);
     }, 3000);
 
-    const handleHash = () => {
-      const hash = window.location.hash.replace('#', '') || 'home';
-      setCurrentPage(hash);
+    const handleUrl = () => {
+      const path = window.location.pathname.replace(/^\//, '') || 'home';
+      // If it's the root path, default to home
+      setCurrentPage(path === '' ? 'home' : path);
     };
-    window.addEventListener('hashchange', handleHash);
-    handleHash();
+    window.addEventListener('popstate', handleUrl);
+    handleUrl();
     
     return () => {
-      window.removeEventListener('hashchange', handleHash);
+      window.removeEventListener('popstate', handleUrl);
       clearTimeout(splashTimer);
     };
   }, [loadInitialData]);
@@ -81,7 +82,9 @@ const MainContent: React.FC = () => {
   }, [authLoading]);
 
   const navigate = (page: string, keepCategory = false) => {
-    window.location.hash = page;
+    const url = page === 'home' ? '/' : `/${page}`;
+    window.history.pushState(null, '', url);
+    setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'instant' });
     setGlobalSearch(''); // clear search on navigation
     if (!keepCategory) setActiveCategoryId(null); // clear category on navigation
@@ -146,7 +149,7 @@ const MainContent: React.FC = () => {
           );
         }
         return <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} selectedCategory={activeCategoryId} onCategoryChange={setActiveCategoryId} />;
-      case 'product': return selectedProduct ? <ProductPage product={selectedProduct} /> : <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} selectedCategory={activeCategoryId} onCategoryChange={setActiveCategoryId} />;
+      case 'product': return selectedProduct ? <ProductPage product={selectedProduct} onNavigate={navigate} /> : <HomePage products={products} onProductClick={onProductClick} searchQuery={globalSearch} onSearchChange={setGlobalSearch} selectedCategory={activeCategoryId} onCategoryChange={setActiveCategoryId} />;
       case 'cart': return <CartPage onCheckout={() => navigate('checkout')} onShop={() => navigate('home')} />;
       case 'checkout': return <CheckoutPage onComplete={() => navigate('user-dashboard')} />;
       case 'admin': 
@@ -196,9 +199,9 @@ const MainContent: React.FC = () => {
                 <p className="flex items-center gap-2">✉️ support@mukit.com</p>
               </div>
               <div className="flex gap-3 mt-5">
-                <a href="#" className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold hover:bg-blue-700 transition">f</a>
-                <a href="#" className="w-8 h-8 bg-sky-500 rounded-full flex items-center justify-center text-white text-xs font-bold hover:bg-sky-600 transition">t</a>
-                <a href="#" className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white text-xs font-bold hover:opacity-90 transition">in</a>
+                <a href="javascript:void(0)" className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold hover:bg-blue-700 transition">f</a>
+                <a href="javascript:void(0)" className="w-8 h-8 bg-sky-500 rounded-full flex items-center justify-center text-white text-xs font-bold hover:bg-sky-600 transition">t</a>
+                <a href="javascript:void(0)" className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white text-xs font-bold hover:opacity-90 transition">in</a>
               </div>
             </div>
 
